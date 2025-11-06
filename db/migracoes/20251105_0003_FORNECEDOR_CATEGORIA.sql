@@ -1,0 +1,20 @@
+-- UP
+CREATE TABLE IF NOT EXISTS fornecedores (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nome VARCHAR(150) NOT NULL,
+  cnpj VARCHAR(18) UNIQUE,
+  email VARCHAR(255),
+  telefone VARCHAR(30),
+  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_fornecedores_nome (nome)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS categorias (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nome VARCHAR(100) NOT NULL UNIQUE,
+  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- DOWN (rollback)
+-- DROP TABLE categorias;
+-- DROP TABLE fornecedores;
