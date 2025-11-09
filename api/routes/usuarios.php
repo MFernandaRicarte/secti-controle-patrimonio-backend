@@ -6,7 +6,7 @@ cors();
 
 try {
     $pdo = db();
-    $sql = "SELECT id, email, nome, criado_em FROM usuarios ORDER BY id DESC";
+    $sql = "SELECT id, matricula, email, nome, criado_em FROM usuarios ORDER BY id DESC";
     $stmt = $pdo->query($sql);
     $usuarios = $stmt->fetchAll();
     json($usuarios);

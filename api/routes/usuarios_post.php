@@ -9,37 +9,33 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $data = json_decode(file_get_contents('php://input'), true);
+if (!$data) json(['error' => 'JSON inválido'], 400);
 
-if (!$data) {
-    json(['error' => 'JSON inválido'], 400);
-}
+$matricula = trim($data['matricula'] ?? '');
+$email     = trim($data['email'] ?? '');
+$nome      = trim($data['nome'] ?? '');
+$senha     = trim($data['senha'] ?? '');
 
-$email = trim($data['email'] ?? '');
-$nome  = trim($data['nome'] ?? '');
-$senha = trim($data['senha'] ?? '');
-
-if ($email === '' || $nome === '' || $senha === '') {
-    json(['error' => 'Campos obrigatórios: email, nome, senha'], 400);
+if ($matricula === '' || $email === '' || $nome === '' || $senha === '') {
+    json(['error' => 'Campos obrigatórios: matricula, email, nome, senha'], 400);
 }
 
 try {
     $pdo = db();
 
-    // verifica duplicidade
-    $check = $pdo->prepare("SELECT id FROM usuarios WHERE email = ?");
-    $check->execute([$email]);
+    $check = $pdo->prepare("SELECT id FROM usuarios WHERE matricula = ? OR email = ?");
+    $check->execute([$matricula, $email]);
     if ($check->fetch()) {
-        json(['error' => 'E-mail já cadastrado'], 409);
+        json(['error' => 'Matrícula ou e-mail já cadastrado'], 409);
     }
 
-    // insere o usuário
-    $sql = "INSERT INTO usuarios (email, nome, senha_hash, criado_em)
-            VALUES (?, ?, ?, NOW())";
+    $sql = "INSERT INTO usuarios (matricula, email, nome, senha_hash, criado_em)
+            VALUES (?, ?, ?, ?, NOW())";
     $stmt = $pdo->prepare($sql);
-    $stmt->execute([$email, $nome, password_hash($senha, PASSWORD_BCRYPT)]);
+    $stmt->execute([$matricula, $email, $nome, password_hash($senha, PASSWORD_BCRYPT)]);
 
     $id = $pdo->lastInsertId();
-    json(['id' => (int)$id, 'email' => $email, 'nome' => $nome], 201);
+    json(['id' => (int)$id, 'matricula' => $matricula, 'email' => $email, 'nome' => $nome], 201);
 } catch (Throwable $e) {
     json(['error' => $e->getMessage()], 500);
 }
