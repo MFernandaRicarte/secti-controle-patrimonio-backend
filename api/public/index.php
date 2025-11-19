@@ -7,6 +7,11 @@ $routes = [
     'GET /api/ping'      => __DIR__.'/../routes/ping.php',
     'GET /api/usuarios'  => __DIR__.'/../routes/usuarios.php',
     'POST /api/usuarios' => __DIR__.'/../routes/usuarios_post.php',
+	'DELETE /api/usuarios/:id' => __DIR__ .'/../routes/usuarios_delete.php',
+
+	'GET /api/setores'          => __DIR__ . '/../routes/setores.php',
+
+    "POST /api/login"           => __DIR__ . "/../routes/login.php",
 ];
 
 $key = $method.' '.$uri;
