@@ -47,13 +47,14 @@ $params = [];
 foreach ($camposPermitidos as $campo) {
     if (array_key_exists($campo, $input)) {
         $sets[] = "$campo = :$campo";
-        $params[":$campo"] = $input[$campo] === '' ? null : $input[$campo];
+        $params[":$campo"] = ($input[$campo] === '' ? null : $input[$campo]);
     }
 }
 
 if (!$sets) {
     json(['error' => 'Nenhum campo para atualizar'], 400);
 }
+
 
 if (isset($input['id_patrimonial'])) {
     $stmt = $pdo->prepare('SELECT id FROM bens_patrimoniais WHERE id_patrimonial = ? AND id <> ?');
@@ -70,12 +71,70 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 
 $stmt = $pdo->prepare("
-    SELECT id, id_patrimonial, descricao, tipo_eletronico, estado,
-           setor_id, sala_id, responsavel_usuario_id, data_aquisicao, valor, criado_em
-    FROM bens_patrimoniais
-    WHERE id = ?
+SELECT
+    b.id,
+    b.id_patrimonial,
+    b.descricao,
+    b.tipo_eletronico,
+
+    b.categoria_id,
+    c.nome  AS categoria,
+
+    b.setor_id,
+    s.nome  AS setor,
+
+    b.sala_id,
+    sa.nome AS sala,
+
+    b.responsavel_usuario_id,
+    u.nome  AS responsavel,
+
+    b.estado,
+    b.data_aquisicao,
+    b.valor,
+    b.criado_em
+FROM bens_patrimoniais b
+LEFT JOIN categorias c  ON c.id  = b.categoria_id
+LEFT JOIN setores    s  ON s.id  = b.setor_id
+LEFT JOIN salas      sa ON sa.id = b.sala_id
+LEFT JOIN usuarios   u  ON u.id  = b.responsavel_usuario_id
+WHERE b.id = ?
 ");
 $stmt->execute([$id]);
-$bem = $stmt->fetch(PDO::FETCH_ASSOC);
+$row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$row) {
+    json(['error' => 'Bem não encontrado após atualizar'], 500);
+}
+
+$localizacao = null;
+if (!empty($row['setor']) && !empty($row['sala'])) {
+    $localizacao = $row['setor'] . ' / ' . $row['sala'];
+} elseif (!empty($row['setor'])) {
+    $localizacao = $row['setor'];
+} elseif (!empty($row['sala'])) {
+    $localizacao = $row['sala'];
+}
+
+$bem = [
+    'id'                     => (int)$row['id'],
+    'patrimonial'            => $row['id_patrimonial'],
+    'descripcion'            => $row['descricao'],
+    'descricao'              => $row['descricao'],
+    'tipo_eletronico'        => $row['tipo_eletronico'],
+
+    'categoria_id'           => $row['categoria_id'] ? (int)$row['categoria_id'] : null,
+    'setor_id'               => $row['setor_id'] ? (int)$row['setor_id'] : null,
+    'sala_id'                => $row['sala_id'] ? (int)$row['sala_id'] : null,
+    'responsavel_usuario_id' => $row['responsavel_usuario_id'] ? (int)$row['responsavel_usuario_id'] : null,
+
+    'categoria'              => $row['categoria'],
+    'localizacao'            => $localizacao,
+    'responsavel'            => $row['responsavel'],
+
+    'estado'                 => $row['estado'],
+    'data_aquisicao'         => $row['data_aquisicao'],
+    'valor'                  => $row['valor'],
+];
 
 json($bem);

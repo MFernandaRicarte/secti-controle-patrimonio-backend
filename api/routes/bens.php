@@ -16,7 +16,7 @@ if ($method !== 'GET') {
     exit;
 }
 
-$dsn = 'mysql:host=127.0.0.1;port=3307;dbname=secti;charset=utf8mb4';
+$dsn  = 'mysql:host=127.0.0.1;port=3307;dbname=secti;charset=utf8mb4';
 $user = 'secti';
 $pass = 'secti';
 
@@ -54,13 +54,23 @@ SELECT
     b.id_patrimonial,
     b.descricao,
     b.tipo_eletronico,
+
+    b.categoria_id,
     c.nome  AS categoria,
+
+    b.setor_id,
     s.nome  AS setor,
+
+    b.sala_id,
     sa.nome AS sala,
+
+    b.responsavel_usuario_id,
     u.nome  AS responsavel,
+
     b.estado,
     b.data_aquisicao,
-    b.valor
+    b.valor,
+    b.criado_em
 FROM bens_patrimoniais b
 LEFT JOIN categorias c  ON c.id  = b.categoria_id
 LEFT JOIN setores    s  ON s.id  = b.setor_id
@@ -88,16 +98,21 @@ try {
         }
 
         return [
-            'id'              => (int) $row['id'],
-            'patrimonial'     => $row['id_patrimonial'],
-            'descricao'       => $row['descricao'],
-            'tipo_eletronico' => $row['tipo_eletronico'],
-            'categoria'       => $row['categoria'],
-            'localizacao'     => $localizacao,
-            'responsavel'     => $row['responsavel'],
-            'estado'          => $row['estado'],
-            'data_aquisicao'  => $row['data_aquisicao'],
-            'valor'           => $row['valor'],
+            'id'                     => (int) $row['id'],
+            'patrimonial'            => $row['id_patrimonial'],
+            'descricao'              => $row['descricao'],
+            'tipo_eletronico'        => $row['tipo_eletronico'],
+            'categoria_id'           => $row['categoria_id'] ? (int)$row['categoria_id'] : null,
+            'setor_id'               => $row['setor_id'] ? (int)$row['setor_id'] : null,
+            'sala_id'                => $row['sala_id'] ? (int)$row['sala_id'] : null,
+            'responsavel_usuario_id' => $row['responsavel_usuario_id'] ? (int)$row['responsavel_usuario_id'] : null,
+            'categoria'              => $row['categoria'],
+            'localizacao'            => $localizacao,
+            'responsavel'            => $row['responsavel'],
+
+            'estado'                 => $row['estado'],
+            'data_aquisicao'         => $row['data_aquisicao'],
+            'valor'                  => $row['valor'],
         ];
     }, $rows);
 
