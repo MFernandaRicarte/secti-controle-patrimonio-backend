@@ -13,6 +13,11 @@ $routes = [
     'GET /api/bens'      => __DIR__.'/../routes/bens.php',
     'POST /api/bens'     => __DIR__.'/../routes/bens_post.php',
 
+    'GET /api/materiais' => __DIR__.'/../routes/materiais.php',
+    'POST /api/materiais'=> __DIR__.'/../routes/materiais_post.php',
+    'GET /api/materiais'  => __DIR__.'/../routes/materiais.php',
+    'POST /api/materiais' => __DIR__.'/../routes/materiais_post.php',
+
     'POST /api/login'    => __DIR__.'/../routes/login.php',
 ];
 
@@ -46,6 +51,20 @@ if (preg_match('#^/api/bens/(\d+)$#', $uri, $m)) {
     }
     if ($method === 'DELETE') {
         require __DIR__.'/../routes/bens_delete.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/materiais/(\d+)$#', $uri, $m)) {
+    $id = (int)$m[1];
+    $GLOBALS['routeParams'] = ['id' => $id];
+
+    if ($method === 'PUT' || $method === 'PATCH') {
+        require __DIR__.'/../routes/materiais_put.php';
+        exit;
+    }
+    if ($method === 'DELETE') {
+        require __DIR__.'/../routes/materiais_delete.php';
         exit;
     }
 }
