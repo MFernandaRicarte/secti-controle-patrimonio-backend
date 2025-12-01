@@ -37,16 +37,12 @@ $routes = [
     'POST /api/login'    => __DIR__.'/../routes/login.php',
 ];
 
-// --------- rotas estáticas (sem :id) ---------
 $key = $method.' '.$uri;
 if (isset($routes[$key])) {
     require $routes[$key];
     exit;
 }
 
-// --------- rotas dinâmicas com :id ---------
-
-// /api/usuarios/{id}
 if (preg_match('#^/api/usuarios/(\d+)$#', $uri, $m)) {
     $id = (int)$m[1];
     $GLOBALS['routeParams'] = ['id' => $id];
@@ -61,7 +57,6 @@ if (preg_match('#^/api/usuarios/(\d+)$#', $uri, $m)) {
     }
 }
 
-// /api/bens/{id}
 if (preg_match('#^/api/bens/(\d+)$#', $uri, $m)) {
     $id = (int)$m[1];
     $GLOBALS['routeParams'] = ['id' => $id];
@@ -76,7 +71,6 @@ if (preg_match('#^/api/bens/(\d+)$#', $uri, $m)) {
     }
 }
 
-// /api/materiais/{id}
 if (preg_match('#^/api/materiais/(\d+)$#', $uri, $m)) {
     $id = (int)$m[1];
     $GLOBALS['routeParams'] = ['id' => $id];
@@ -91,7 +85,6 @@ if (preg_match('#^/api/materiais/(\d+)$#', $uri, $m)) {
     }
 }
 
-// /api/tipos-materiais/{id}
 if (preg_match('#^/api/tipos-materiais/(\d+)$#', $uri, $m)) {
     $id = (int)$m[1];
     $GLOBALS['routeParams'] = ['id' => $id];
@@ -106,7 +99,6 @@ if (preg_match('#^/api/tipos-materiais/(\d+)$#', $uri, $m)) {
     }
 }
 
-// /api/tipos-eletronicos/{id}
 if (preg_match('#^/api/tipos-eletronicos/(\d+)$#', $uri, $m)) {
     $id = (int)$m[1];
     $GLOBALS['routeParams'] = ['id' => $id];
@@ -121,7 +113,34 @@ if (preg_match('#^/api/tipos-eletronicos/(\d+)$#', $uri, $m)) {
     }
 }
 
-// ------------- 404 padrão -------------
+if (preg_match('#^/api/setores/(\d+)$#', $uri, $m)) {
+    $id = (int)$m[1];
+    $GLOBALS['routeParams'] = ['id' => $id];
+
+    if ($method === 'PUT' || $method === 'PATCH') {
+        require __DIR__.'/../routes/setores_put.php';
+        exit;
+    }
+    if ($method === 'DELETE') {
+        require __DIR__.'/../routes/setores_delete.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/salas/(\d+)$#', $uri, $m)) {
+    $id = (int)$m[1];
+    $GLOBALS['routeParams'] = ['id' => $id];
+
+    if ($method === 'PUT' || $method === 'PATCH') {
+        require __DIR__.'/../routes/salas_put.php';
+        exit;
+    }
+    if ($method === 'DELETE') {
+        require __DIR__.'/../routes/salas_delete.php';
+        exit;
+    }
+}
+
 require __DIR__.'/../lib/http.php';
 cors();
 json(['error' => 'Not Found', 'path' => $uri], 404);
