@@ -3,21 +3,39 @@ $uri    = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $method = $_SERVER['REQUEST_METHOD'];
 
 $routes = [
+    // Healthcheck
     'GET /api/ping'      => __DIR__.'/../routes/ping.php',
-    'GET /api/usuarios'  => __DIR__.'/../routes/usuarios.php',
-    'POST /api/usuarios' => __DIR__.'/../routes/usuarios_post.php',
+
+    // Usuários
+    'GET /api/usuarios'        => __DIR__.'/../routes/usuarios.php',
+    'POST /api/usuarios'       => __DIR__.'/../routes/usuarios_post.php',
     'DELETE /api/usuarios/:id' => __DIR__.'/../routes/usuarios_delete.php',
 
+    // Setores e salas
     'GET /api/setores'   => __DIR__.'/../routes/setores.php',
+    'POST /api/setores'  => __DIR__.'/../routes/setores_post.php',
 
+    'GET /api/salas'     => __DIR__.'/../routes/salas.php',
+    'POST /api/salas'    => __DIR__.'/../routes/salas_post.php',
+
+    // Bens permanentes
     'GET /api/bens'      => __DIR__.'/../routes/bens.php',
     'POST /api/bens'     => __DIR__.'/../routes/bens_post.php',
 
-    'GET /api/materiais' => __DIR__.'/../routes/materiais.php',
-    'POST /api/materiais'=> __DIR__.'/../routes/materiais_post.php',
+    // Materiais de consumo
     'GET /api/materiais'  => __DIR__.'/../routes/materiais.php',
     'POST /api/materiais' => __DIR__.'/../routes/materiais_post.php',
+    'PUT /api/materiais/:id'    => __DIR__.'/../routes/materiais_put.php',
+    'DELETE /api/materiais/:id' => __DIR__.'/../routes/materiais_delete.php',
 
+    // Tipos básicos
+    'GET /api/tipos-materiais'   => __DIR__.'/../routes/tipos_materiais.php',
+    'POST /api/tipos-materiais'  => __DIR__.'/../routes/tipos_materiais_post.php',
+
+    'GET /api/tipos-eletronicos'   => __DIR__.'/../routes/tipos_eletronicos.php',
+    'POST /api/tipos-eletronicos'  => __DIR__.'/../routes/tipos_eletronicos_post.php',
+
+    // Login
     'POST /api/login'    => __DIR__.'/../routes/login.php',
 ];
 
