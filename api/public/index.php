@@ -33,6 +33,9 @@ $routes = [
     'GET /api/tipos-eletronicos'   => __DIR__.'/../routes/tipos_eletronicos.php',
     'POST /api/tipos-eletronicos'  => __DIR__.'/../routes/tipos_eletronicos_post.php',
 
+    'GET /api/transferencias'    => __DIR__.'/../routes/transferencias.php',
+    'POST /api/transferencias'   => __DIR__.'/../routes/transferencias_post.php',
+
     // Login
     'POST /api/login'    => __DIR__.'/../routes/login.php',
 ];
