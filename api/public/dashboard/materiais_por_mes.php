@@ -11,14 +11,15 @@ $pdo = db();
 $ano = isset($_GET['ano']) ? (int)$_GET['ano'] : (int)date('Y');
 
 try {
+
     $sql = "
         SELECT
-            MONTH(e.data_entrada) AS mes,
-            SUM(e.quantidade) AS total
-        FROM entradas_estoque e
-        WHERE YEAR(e.data_entrada) = ?
-        GROUP BY MONTH(e.data_entrada)
-        ORDER BY MONTH(e.data_entrada)
+            MONTH(criado_em) AS mes,
+            SUM(estoque_atual) AS total
+        FROM itens_estoque
+        WHERE YEAR(criado_em) = ?
+        GROUP BY MONTH(criado_em)
+        ORDER BY MONTH(criado_em)
     ";
 
     $stmt = $pdo->prepare($sql);
@@ -33,10 +34,11 @@ try {
     }
 
     echo json_encode($out);
+
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode([
-        'erro' => 'Erro ao gerar materiais_por_mes',
+        'erro'    => 'Erro ao gerar materiais_por_mes',
         'detalhe' => $e->getMessage(),
     ]);
 }
