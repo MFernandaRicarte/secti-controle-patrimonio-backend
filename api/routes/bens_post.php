@@ -58,7 +58,6 @@ function gerarProximoPatrimonio(PDO $pdo): string
             FROM bens_patrimoniais
             WHERE id_patrimonial REGEXP '^[0-9]{5}$'
         ");
-
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         $max = $row && $row['mx'] !== null ? (int)$row['mx'] : 0;
 
@@ -70,6 +69,8 @@ function gerarProximoPatrimonio(PDO $pdo): string
 }
 
 $hasTombamentoExistente = colunaExiste($pdo, 'bens_patrimoniais', 'tombamento_existente');
+$hasObs = colunaExiste($pdo, 'bens_patrimoniais', 'observacao');
+$hasImg = colunaExiste($pdo, 'bens_patrimoniais', 'imagem_path');
 
 $input = json_decode(file_get_contents('php://input'), true) ?? [];
 
@@ -82,27 +83,24 @@ $categoriaId     = !empty($input['categoria_id']) ? (int)$input['categoria_id'] 
 $responsavelId   = !empty($input['responsavel_usuario_id']) ? (int)$input['responsavel_usuario_id'] : null;
 
 $tombamentoExistente = trim($input['tombamento_existente'] ?? '');
-if ($tombamentoExistente === '') {
-    $tombamentoExistente = null;
-}
+if ($tombamentoExistente === '') $tombamentoExistente = null;
 
 $valor = isset($input['valor']) && $input['valor'] !== ''
     ? (float)$input['valor']
     : null;
 
-$erros = [];
+$observacao = isset($input['observacao']) ? trim($input['observacao']) : null;
+if ($observacao === '') $observacao = null;
 
-if ($descricao === '') {
-    $erros[] = 'descricao é obrigatória.';
-}
-if ($tipoEletronico === '') {
-    $erros[] = 'tipo_eletronico é obrigatório.';
-}
+$imagemPath = isset($input['imagem_path']) ? trim($input['imagem_path']) : null;
+if ($imagemPath === '') $imagemPath = null;
+
+$erros = [];
+if ($descricao === '') $erros[] = 'descricao é obrigatória.';
+if ($tipoEletronico === '') $erros[] = 'tipo_eletronico é obrigatório.';
 
 $estadosValidos = ['ativo', 'baixado', 'manutencao'];
-if (!in_array($estado, $estadosValidos, true)) {
-    $erros[] = 'estado inválido.';
-}
+if (!in_array($estado, $estadosValidos, true)) $erros[] = 'estado inválido.';
 
 if ($erros) {
     json(['error' => 'Dados inválidos.', 'detalhes' => $erros], 422);
@@ -111,86 +109,54 @@ if ($erros) {
 
 try {
     $idPatrimonial = gerarProximoPatrimonio($pdo);
+    $cols = ['id_patrimonial'];
+    $vals = [':id_patrimonial'];
+    $params = [':id_patrimonial' => $idPatrimonial];
 
     if ($hasTombamentoExistente) {
-        $sqlInsert = "
-            INSERT INTO bens_patrimoniais (
-                id_patrimonial,
-                tombamento_existente,
-                descricao,
-                tipo_eletronico,
-                estado,
-                valor,
-                setor_id,
-                sala_id,
-                categoria_id,
-                responsavel_usuario_id
-            ) VALUES (
-                :id_patrimonial,
-                :tombamento_existente,
-                :descricao,
-                :tipo_eletronico,
-                :estado,
-                :valor,
-                :setor_id,
-                :sala_id,
-                :categoria_id,
-                :responsavel_usuario_id
-            )
-        ";
-
-        $paramsInsert = [
-            ':id_patrimonial'         => $idPatrimonial,
-            ':tombamento_existente'   => $tombamentoExistente,
-            ':descricao'              => $descricao,
-            ':tipo_eletronico'        => $tipoEletronico,
-            ':estado'                 => $estado,
-            ':valor'                  => $valor,
-            ':setor_id'               => $setorId,
-            ':sala_id'                => $salaId,
-            ':categoria_id'           => $categoriaId,
-            ':responsavel_usuario_id' => $responsavelId,
-        ];
-    } else {
-        $sqlInsert = "
-            INSERT INTO bens_patrimoniais (
-                id_patrimonial,
-                descricao,
-                tipo_eletronico,
-                estado,
-                valor,
-                setor_id,
-                sala_id,
-                categoria_id,
-                responsavel_usuario_id
-            ) VALUES (
-                :id_patrimonial,
-                :descricao,
-                :tipo_eletronico,
-                :estado,
-                :valor,
-                :setor_id,
-                :sala_id,
-                :categoria_id,
-                :responsavel_usuario_id
-            )
-        ";
-
-        $paramsInsert = [
-            ':id_patrimonial'         => $idPatrimonial,
-            ':descricao'              => $descricao,
-            ':tipo_eletronico'        => $tipoEletronico,
-            ':estado'                 => $estado,
-            ':valor'                  => $valor,
-            ':setor_id'               => $setorId,
-            ':sala_id'                => $salaId,
-            ':categoria_id'           => $categoriaId,
-            ':responsavel_usuario_id' => $responsavelId,
-        ];
+        $cols[] = 'tombamento_existente';
+        $vals[] = ':tombamento_existente';
+        $params[':tombamento_existente'] = $tombamentoExistente;
     }
 
+    $cols = array_merge($cols, [
+        'descricao', 'tipo_eletronico', 'estado', 'valor',
+        'setor_id', 'sala_id', 'categoria_id', 'responsavel_usuario_id'
+    ]);
+
+    $vals = array_merge($vals, [
+        ':descricao', ':tipo_eletronico', ':estado', ':valor',
+        ':setor_id', ':sala_id', ':categoria_id', ':responsavel_usuario_id'
+    ]);
+
+    $params = array_merge($params, [
+        ':descricao' => $descricao,
+        ':tipo_eletronico' => $tipoEletronico,
+        ':estado' => $estado,
+        ':valor' => $valor,
+        ':setor_id' => $setorId,
+        ':sala_id' => $salaId,
+        ':categoria_id' => $categoriaId,
+        ':responsavel_usuario_id' => $responsavelId,
+    ]);
+
+    if ($hasObs) {
+        $cols[] = 'observacao';
+        $vals[] = ':observacao';
+        $params[':observacao'] = $observacao;
+    }
+
+    if ($hasImg) {
+        $cols[] = 'imagem_path';
+        $vals[] = ':imagem_path';
+        $params[':imagem_path'] = $imagemPath;
+    }
+
+    $sqlInsert = "INSERT INTO bens_patrimoniais (" . implode(',', $cols) . ")
+                 VALUES (" . implode(',', $vals) . ")";
+
     $stmt = $pdo->prepare($sqlInsert);
-    $stmt->execute($paramsInsert);
+    $stmt->execute($params);
 
     $novoId = (int)$pdo->lastInsertId();
 } catch (PDOException $e) {
@@ -206,13 +172,17 @@ try {
 }
 
 try {
-    $selectExtra = $hasTombamentoExistente ? "b.tombamento_existente," : "";
+    $selectExtras = [];
+    if ($hasTombamentoExistente) $selectExtras[] = "b.tombamento_existente";
+    if ($hasObs) $selectExtras[] = "b.observacao";
+    if ($hasImg) $selectExtras[] = "b.imagem_path";
+
+    $extraSql = $selectExtras ? (",\n        " . implode(",\n        ", $selectExtras)) : "";
 
     $sqlSelect = "
     SELECT
         b.id,
-        b.id_patrimonial,
-        {$selectExtra}
+        b.id_patrimonial{$extraSql},
         b.descricao,
         b.tipo_eletronico,
 
@@ -263,24 +233,28 @@ if (!empty($row['setor']) && !empty($row['sala'])) {
 }
 
 $bem = [
-    'id'                    => (int)$row['id'],
-    'patrimonial'           => $row['id_patrimonial'],
-    'tombamento_existente'  => $hasTombamentoExistente ? ($row['tombamento_existente'] ?? null) : null,
-    'descricao'             => $row['descricao'],
-    'tipo_eletronico'       => $row['tipo_eletronico'],
+    'id'                   => (int)$row['id'],
+    'patrimonial'          => $row['id_patrimonial'],
+    'tombamento_existente' => $hasTombamentoExistente ? ($row['tombamento_existente'] ?? null) : null,
 
-    'categoria_id'          => $row['categoria_id'] ? (int)$row['categoria_id'] : null,
-    'setor_id'              => $row['setor_id'] ? (int)$row['setor_id'] : null,
-    'sala_id'               => $row['sala_id'] ? (int)$row['sala_id'] : null,
+    'descricao'            => $row['descricao'],
+    'tipo_eletronico'      => $row['tipo_eletronico'],
+
+    'categoria_id'         => $row['categoria_id'] ? (int)$row['categoria_id'] : null,
+    'setor_id'             => $row['setor_id'] ? (int)$row['setor_id'] : null,
+    'sala_id'              => $row['sala_id'] ? (int)$row['sala_id'] : null,
     'responsavel_usuario_id'=> $row['responsavel_usuario_id'] ? (int)$row['responsavel_usuario_id'] : null,
 
-    'categoria'             => $row['categoria'],
-    'localizacao'           => $localizacao,
-    'responsavel'           => $row['responsavel'],
+    'categoria'            => $row['categoria'],
+    'localizacao'          => $localizacao,
+    'responsavel'          => $row['responsavel'],
 
-    'estado'                => $row['estado'],
-    'data_aquisicao'        => $row['data_aquisicao'],
-    'valor'                 => $row['valor'],
+    'estado'               => $row['estado'],
+    'data_aquisicao'       => $row['data_aquisicao'],
+    'valor'                => $row['valor'],
+
+    'observacao'           => $hasObs ? ($row['observacao'] ?? null) : null,
+    'imagem_path'          => $hasImg ? ($row['imagem_path'] ?? null) : null,
 ];
 
 json($bem, 201);

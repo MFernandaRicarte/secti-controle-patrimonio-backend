@@ -39,6 +39,8 @@ $camposPermitidos = [
     'setor_id',
     'sala_id',
     'responsavel_usuario_id',
+    'observacao',
+    'imagem_path',
 ];
 
 $sets   = [];
@@ -92,6 +94,8 @@ SELECT
     b.estado,
     b.data_aquisicao,
     b.valor,
+    b.observacao,
+    b.imagem_path,
     b.criado_em
 FROM bens_patrimoniais b
 LEFT JOIN categorias c  ON c.id  = b.categoria_id
@@ -135,6 +139,9 @@ $bem = [
     'estado'                 => $row['estado'],
     'data_aquisicao'         => $row['data_aquisicao'],
     'valor'                  => $row['valor'],
+
+    'observacao' => $row['observacao'],
+    'imagem_path' => $row['imagem_path'],
 ];
 
 json($bem);
