@@ -22,6 +22,7 @@ $routes = [
     'GET /api/bens'      => __DIR__.'/../routes/bens.php',
     'POST /api/bens'     => __DIR__.'/../routes/bens_post.php',
     'POST /api/bens/upload' => __DIR__.'/../routes/bens_upload.php',
+    'GET /api/bens-detalhes' => __DIR__.'/../routes/bens_detalhes.php',
 
     // Materiais de consumo
     'GET /api/materiais'        => __DIR__.'/../routes/materiais.php',
