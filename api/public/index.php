@@ -43,6 +43,7 @@ $routes = [
 
     // Licitações
     'GET /api/licitacoes'      => __DIR__.'/../routes/licitacoes.php',
+    'POST /api/licitacoes/cadastro'     => __DIR__.'/../routes/licitacoes_post.php',
 ];
 
 $key = $method.' '.$uri;
