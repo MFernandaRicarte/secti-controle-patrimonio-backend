@@ -40,6 +40,9 @@ $routes = [
 
     // Login
     'POST /api/login'    => __DIR__.'/../routes/login.php',
+
+    // Licitações
+    'GET /api/licitacoes'      => __DIR__.'/../routes/licitacoes.php',
 ];
 
 $key = $method.' '.$uri;
