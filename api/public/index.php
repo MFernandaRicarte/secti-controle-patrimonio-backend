@@ -23,6 +23,7 @@ $routes = [
     'POST /api/bens'     => __DIR__.'/../routes/bens_post.php',
     'POST /api/bens/upload' => __DIR__.'/../routes/bens_upload.php',
     'GET /api/bens-detalhes' => __DIR__.'/../routes/bens_detalhes.php',
+    'GET /api/bens-excluidos' => __DIR__.'/../routes/bens_excluidos.php',
 
     // Materiais de consumo
     'GET /api/materiais'        => __DIR__.'/../routes/materiais.php',
@@ -58,6 +59,16 @@ if (preg_match('#^/api/usuarios/(\d+)$#', $uri, $m)) {
     }
     if ($method === 'DELETE') {
         require __DIR__.'/../routes/usuarios_delete.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/bens/(\d+)/restaurar$#', $uri, $m)) {
+    $id = (int)$m[1];
+    $GLOBALS['routeParams'] = ['id' => $id];
+
+    if ($method === 'POST') {
+        require __DIR__.'/../routes/bens_restaurar.php';
         exit;
     }
 }

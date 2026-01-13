@@ -1,7 +1,6 @@
 <?php
 
 require __DIR__ . '/../lib/http.php';
-
 cors();
 
 header('Content-Type: application/json; charset=utf-8');
@@ -10,9 +9,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method !== 'GET') {
     http_response_code(405);
-    echo json_encode([
-        'error' => 'Método não permitido. Use GET.',
-    ]);
+    echo json_encode(['error' => 'Método não permitido. Use GET.']);
     exit;
 }
 
@@ -26,18 +23,16 @@ try {
     ]);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode([
-        'error' => 'Erro ao conectar ao banco de dados.',
-    ]);
+    echo json_encode(['error' => 'Erro ao conectar ao banco de dados.']);
     exit;
 }
 
 $q = isset($_GET['q']) ? trim($_GET['q']) : '';
-$where = '';
+$whereParts = ["b.excluido_em IS NULL"];
 $params = [];
 
 if ($q !== '') {
-    $where = "WHERE (
+    $whereParts[] = "(
         b.id_patrimonial LIKE :q
         OR b.descricao LIKE :q
         OR COALESCE(c.nome, '') LIKE :q
@@ -47,6 +42,8 @@ if ($q !== '') {
     )";
     $params[':q'] = '%' . $q . '%';
 }
+
+$where = "WHERE " . implode(" AND ", $whereParts);
 
 $sql = "
 SELECT
@@ -119,7 +116,5 @@ try {
     echo json_encode($bens);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode([
-        'error' => 'Erro ao buscar bens.',
-    ]);
+    echo json_encode(['error' => 'Erro ao buscar bens.']);
 }
