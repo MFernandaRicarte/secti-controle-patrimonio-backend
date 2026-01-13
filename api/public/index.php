@@ -162,6 +162,17 @@ if (preg_match('#^/api/licitacoes/(\d+)/alterar$#', $uri, $m)) {
     }
 }
 
+//Rota para deletar licitação
+if (preg_match('#^/api/licitacoes/(\d+)$#', $uri, $m)) {
+    $id = (int)$m[1];
+    $GLOBALS['routeParams'] = ['id' => $id];
+
+    if ($method === 'DELETE') {
+        require __DIR__.'/../routes/licitacoes_delete.php';
+        exit;
+    }
+}
+
 require __DIR__.'/../lib/http.php';
 cors();
 json(['error' => 'Not Found', 'path' => $uri], 404);
