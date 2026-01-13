@@ -44,6 +44,7 @@ $routes = [
     // Licitações
     'GET /api/licitacoes'      => __DIR__.'/../routes/licitacoes.php',
     'POST /api/licitacoes/cadastro'     => __DIR__.'/../routes/licitacoes_post.php',
+    'PUT /api/licitacoes/:id/alterar'     => __DIR__.'/../routes/licitacoes_put.php',
 ];
 
 $key = $method.' '.$uri;
@@ -146,6 +147,17 @@ if (preg_match('#^/api/salas/(\d+)$#', $uri, $m)) {
     }
     if ($method === 'DELETE') {
         require __DIR__.'/../routes/salas_delete.php';
+        exit;
+    }
+}
+
+//Rota para alterar licitação
+if (preg_match('#^/api/licitacoes/(\d+)/alterar$#', $uri, $m)) {
+    $id = (int)$m[1];
+    $GLOBALS['routeParams'] = ['id' => $id];
+
+    if ($method === 'PUT' || $method === 'PATCH') {
+        require __DIR__.'/../routes/licitacoes_put.php';
         exit;
     }
 }
