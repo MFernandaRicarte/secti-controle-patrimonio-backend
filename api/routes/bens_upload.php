@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '/../lib/http.php';
+require_once __DIR__ . '/../lib/http.php';
 
 cors();
 

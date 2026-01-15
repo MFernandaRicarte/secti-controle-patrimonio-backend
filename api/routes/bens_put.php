@@ -1,6 +1,6 @@
 <?php
-require __DIR__ . '/../lib/db.php';
-require __DIR__ . '/../lib/http.php';
+require_once __DIR__ . '/../lib/db.php';
+require_once __DIR__ . '/../lib/http.php';
 
 cors();
 

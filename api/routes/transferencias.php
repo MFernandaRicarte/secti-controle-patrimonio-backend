@@ -1,8 +1,8 @@
 <?php
 // api/routes/transferencias.php
 
-require __DIR__ . '/../lib/http.php';
-require __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../lib/http.php';
+require_once __DIR__ . '/../config/config.php';
 
 cors();
 

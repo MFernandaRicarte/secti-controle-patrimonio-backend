@@ -54,11 +54,11 @@ if (preg_match('#^/api/usuarios/(\d+)$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => $id];
 
     if ($method === 'PUT' || $method === 'PATCH') {
-        require __DIR__.'/../routes/usuarios_put.php';
+        require_once __DIR__ .'/../routes/usuarios_put.php';
         exit;
     }
     if ($method === 'DELETE') {
-        require __DIR__.'/../routes/usuarios_delete.php';
+        require_once __DIR__ .'/../routes/usuarios_delete.php';
         exit;
     }
 }
@@ -68,7 +68,7 @@ if (preg_match('#^/api/bens/(\d+)/restaurar$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => $id];
 
     if ($method === 'POST') {
-        require __DIR__.'/../routes/bens_restaurar.php';
+        require_once __DIR__ .'/../routes/bens_restaurar.php';
         exit;
     }
 }
@@ -78,11 +78,11 @@ if (preg_match('#^/api/bens/(\d+)$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => $id];
 
     if ($method === 'PUT' || $method === 'PATCH') {
-        require __DIR__.'/../routes/bens_put.php';
+        require_once __DIR__ .'/../routes/bens_put.php';
         exit;
     }
     if ($method === 'DELETE') {
-        require __DIR__.'/../routes/bens_delete.php';
+        require_once __DIR__ .'/../routes/bens_delete.php';
         exit;
     }
 }
@@ -92,11 +92,11 @@ if (preg_match('#^/api/materiais/(\d+)$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => $id];
 
     if ($method === 'PUT' || $method === 'PATCH') {
-        require __DIR__.'/../routes/materiais_put.php';
+        require_once __DIR__ .'/../routes/materiais_put.php';
         exit;
     }
     if ($method === 'DELETE') {
-        require __DIR__.'/../routes/materiais_delete.php';
+        require_once __DIR__ .'/../routes/materiais_delete.php';
         exit;
     }
 }
@@ -106,11 +106,11 @@ if (preg_match('#^/api/tipos-materiais/(\d+)$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => $id];
 
     if ($method === 'PUT' || $method === 'PATCH') {
-        require __DIR__.'/../routes/tipos_materiais_put.php';
+        require_once __DIR__ .'/../routes/tipos_materiais_put.php';
         exit;
     }
     if ($method === 'DELETE') {
-        require __DIR__.'/../routes/tipos_materiais_delete.php';
+        require_once __DIR__ .'/../routes/tipos_materiais_delete.php';
         exit;
     }
 }
@@ -120,11 +120,11 @@ if (preg_match('#^/api/tipos-eletronicos/(\d+)$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => $id];
 
     if ($method === 'PUT' || $method === 'PATCH') {
-        require __DIR__.'/../routes/tipos_eletronicos_put.php';
+        require_once __DIR__ .'/../routes/tipos_eletronicos_put.php';
         exit;
     }
     if ($method === 'DELETE') {
-        require __DIR__.'/../routes/tipos_eletronicos_delete.php';
+        require_once __DIR__ .'/../routes/tipos_eletronicos_delete.php';
         exit;
     }
 }
@@ -134,11 +134,11 @@ if (preg_match('#^/api/setores/(\d+)$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => $id];
 
     if ($method === 'PUT' || $method === 'PATCH') {
-        require __DIR__.'/../routes/setores_put.php';
+        require_once __DIR__ .'/../routes/setores_put.php';
         exit;
     }
     if ($method === 'DELETE') {
-        require __DIR__.'/../routes/setores_delete.php';
+        require_once __DIR__ .'/../routes/setores_delete.php';
         exit;
     }
 }
@@ -148,15 +148,15 @@ if (preg_match('#^/api/salas/(\d+)$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => $id];
 
     if ($method === 'PUT' || $method === 'PATCH') {
-        require __DIR__.'/../routes/salas_put.php';
+        require_once __DIR__ .'/../routes/salas_put.php';
         exit;
     }
     if ($method === 'DELETE') {
-        require __DIR__.'/../routes/salas_delete.php';
+        require_once __DIR__ .'/../routes/salas_delete.php';
         exit;
     }
 }
 
-require __DIR__.'/../lib/http.php';
+require_once __DIR__ .'/../lib/http.php';
 cors();
 json(['error' => 'Not Found', 'path' => $uri], 404);
