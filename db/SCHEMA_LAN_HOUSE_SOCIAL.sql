@@ -145,6 +145,6 @@ CREATE TABLE IF NOT EXISTS lhs_presencas (
 
 -- Cursos de exemplo
 INSERT IGNORE INTO lhs_cursos (nome, carga_horaria, ementa, ativo) VALUES
-  ('Informática Básica', 40, 'Introdução ao uso do computador, sistemas operacionais, navegação na internet e ferramentas de produtividade.', TRUE),
+  ('Letramento Digital', 12, 'Introdução ao uso do computador, sistemas operacionais, navegação na internet e ferramentas de produtividade.', TRUE),
   ('Excel para Iniciantes', 20, 'Fundamentos do Microsoft Excel: criação de planilhas, fórmulas básicas e formatação.', TRUE),
   ('Internet e Redes Sociais', 16, 'Navegação segura na internet, uso consciente de redes sociais e proteção de dados pessoais.', TRUE);
