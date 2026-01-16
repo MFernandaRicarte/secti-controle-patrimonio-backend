@@ -91,14 +91,14 @@ try {
     $stmt->execute([$id]);
     $fases = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Documentos
+    // Documentos - CORRIGIDO: usando os nomes corretos das colunas
     $sqlDocumentos = "
         SELECT
             ld.id,
-            ld.titulo AS nome,
+            ld.nome,
             ld.tipo,
-            ld.arquivo_caminho AS caminho_arquivo,
-            ld.arquivo_tamanho AS tamanho_arquivo,
+            ld.caminho_arquivo,
+            ld.tamanho_arquivo,
             ld.criado_por,
             u.nome AS criado_por_nome,
             ld.criado_em
@@ -207,6 +207,7 @@ try {
                 'tipo' => $alerta['tipo'],
                 'descricao' => $alerta['descricao'],
                 'data_vencimento' => $alerta['data_vencimento'],
+                'prioridade' => $alerta['prioridade'],
                 'status' => $alerta['status'],
                 'criado_em' => $alerta['criado_em'],
             ];
