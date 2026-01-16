@@ -54,6 +54,14 @@ $routes = [
     // LHS - Cursos
     'GET /api/lhs/cursos' => __DIR__ . '/../routes/lhs/cursos/list.php',
     'POST /api/lhs/cursos' => __DIR__ . '/../routes/lhs/cursos/create.php',
+
+    // LHS - Alunos
+    'GET /api/lhs/alunos' => __DIR__ . '/../routes/lhs/alunos/list.php',
+    'POST /api/lhs/alunos' => __DIR__ . '/../routes/lhs/alunos/create.php',
+
+    // LHS - Turmas
+    'GET /api/lhs/turmas' => __DIR__ . '/../routes/lhs/turmas/list.php',
+    'POST /api/lhs/turmas' => __DIR__ . '/../routes/lhs/turmas/create.php',
 ];
 
 $key = $method . ' ' . $uri;
@@ -231,6 +239,57 @@ if (preg_match('#^/api/lhs/cursos/(\d+)/materiais/(\d+)$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => (int) $m[1], 'material_id' => (int) $m[2]];
     if ($method === 'DELETE') {
         require __DIR__ . '/../routes/lhs/cursos/materiais/delete.php';
+        exit;
+    }
+}
+
+// --- LHS Alunos ---
+if (preg_match('#^/api/lhs/alunos/(\d+)$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'PUT' || $method === 'PATCH') {
+        require __DIR__ . '/../routes/lhs/alunos/update.php';
+        exit;
+    }
+    if ($method === 'DELETE') {
+        require __DIR__ . '/../routes/lhs/alunos/delete.php';
+        exit;
+    }
+}
+
+// --- LHS Turmas ---
+if (preg_match('#^/api/lhs/turmas/(\d+)$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'PUT' || $method === 'PATCH') {
+        require __DIR__ . '/../routes/lhs/turmas/update.php';
+        exit;
+    }
+    if ($method === 'DELETE') {
+        require __DIR__ . '/../routes/lhs/turmas/delete.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/lhs/turmas/(\d+)/detalhes$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'GET') {
+        require __DIR__ . '/../routes/lhs/turmas/details.php';
+        exit;
+    }
+}
+
+// --- LHS Turmas - Matrículas ---
+if (preg_match('#^/api/lhs/turmas/(\d+)/alunos$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'POST') {
+        require __DIR__ . '/../routes/lhs/turmas/alunos/matricular.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/lhs/turmas/(\d+)/alunos/(\d+)$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1], 'aluno_id' => (int) $m[2]];
+    if ($method === 'DELETE') {
+        require __DIR__ . '/../routes/lhs/turmas/alunos/remover.php';
         exit;
     }
 }
