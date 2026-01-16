@@ -40,6 +40,15 @@ $routes = [
 
     // Login
     'POST /api/login'    => __DIR__.'/../routes/login.php',
+
+    // Licitações
+    'GET /api/licitacoes'      => __DIR__.'/../routes/licitacoes.php',
+    'POST /api/licitacoes/cadastro'     => __DIR__.'/../routes/licitacoes_post.php',
+    'PUT /api/licitacoes/:id/alterar'     => __DIR__.'/../routes/licitacoes_put.php',
+
+    // LHS - Cursos
+    'GET /api/lhs/cursos'      => __DIR__.'/../routes/lhs_cursos.php',
+    'POST /api/lhs/cursos'     => __DIR__.'/../routes/lhs_cursos_post.php',
 ];
 
 $key = $method.' '.$uri;
@@ -142,6 +151,97 @@ if (preg_match('#^/api/salas/(\d+)$#', $uri, $m)) {
     }
     if ($method === 'DELETE') {
         require __DIR__.'/../routes/salas_delete.php';
+        exit;
+    }
+}
+
+//Rota para alterar licitação
+if (preg_match('#^/api/licitacoes/(\d+)/alterar$#', $uri, $m)) {
+    $id = (int)$m[1];
+    $GLOBALS['routeParams'] = ['id' => $id];
+
+    if ($method === 'PUT' || $method === 'PATCH') {
+        require __DIR__.'/../routes/licitacoes_put.php';
+        exit;
+    }
+}
+
+//Rota para deletar licitação
+if (preg_match('#^/api/licitacoes/(\d+)$#', $uri, $m)) {
+    $id = (int)$m[1];
+    $GLOBALS['routeParams'] = ['id' => $id];
+
+    if ($method === 'DELETE') {
+        require __DIR__.'/../routes/licitacoes_delete.php';
+        exit;
+    }
+}
+
+//Rota para detalhes da licitação
+if (preg_match('#^/api/licitacoes/(\d+)/detalhes$#', $uri, $m)) {
+    $id = (int)$m[1];
+    $GLOBALS['routeParams'] = ['id' => $id];
+
+    if ($method === 'GET') {
+        require __DIR__.'/../routes/licitacoes_detalhes.php';
+        exit;
+    }
+}
+
+//Rota para upload de documentos da licitação
+if (preg_match('#^/api/licitacoes/(\d+)/documentos$#', $uri, $m)) {
+    $id = (int)$m[1];
+    $GLOBALS['routeParams'] = ['id' => $id];
+
+    if ($method === 'POST') {
+        require __DIR__.'/../routes/licitacoes_documentos.php';
+        exit;
+    }
+}
+
+// LHS - Cursos: PUT/DELETE por ID
+if (preg_match('#^/api/lhs/cursos/(\d+)$#', $uri, $m)) {
+    $id = (int)$m[1];
+    $GLOBALS['routeParams'] = ['id' => $id];
+
+    if ($method === 'PUT' || $method === 'PATCH') {
+        require __DIR__.'/../routes/lhs_cursos_put.php';
+        exit;
+    }
+    if ($method === 'DELETE') {
+        require __DIR__.'/../routes/lhs_cursos_delete.php';
+        exit;
+    }
+}
+
+// LHS - Cursos: Detalhes
+if (preg_match('#^/api/lhs/cursos/(\d+)/detalhes$#', $uri, $m)) {
+    $id = (int)$m[1];
+    $GLOBALS['routeParams'] = ['id' => $id];
+
+    if ($method === 'GET') {
+        require __DIR__.'/../routes/lhs_cursos_detalhes.php';
+        exit;
+    }
+}
+
+// LHS - Cursos: Upload de materiais didáticos
+if (preg_match('#^/api/lhs/cursos/(\d+)/materiais$#', $uri, $m)) {
+    $id = (int)$m[1];
+    $GLOBALS['routeParams'] = ['id' => $id];
+
+    if ($method === 'POST') {
+        require __DIR__.'/../routes/lhs_cursos_materiais.php';
+        exit;
+    }
+}
+
+// LHS - Cursos: Deletar material didático
+if (preg_match('#^/api/lhs/cursos/(\d+)/materiais/(\d+)$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int)$m[1], 'material_id' => (int)$m[2]];
+
+    if ($method === 'DELETE') {
+        require __DIR__.'/../routes/lhs_cursos_materiais_delete.php';
         exit;
     }
 }
