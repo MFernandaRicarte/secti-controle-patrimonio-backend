@@ -1,5 +1,5 @@
 <?php
-// Credenciais do seu MySQL local (XAMPP)
+// Credenciais do banco de dados
 const DB_HOST = '127.0.0.1';
 const DB_PORT = 3306;
 const DB_NAME = 'secti';

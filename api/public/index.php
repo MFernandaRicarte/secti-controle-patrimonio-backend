@@ -30,6 +30,7 @@ $routes = [
     'POST /api/bens' => __DIR__ . '/../routes/bens/create.php',
     'POST /api/bens/upload' => __DIR__ . '/../routes/bens/upload.php',
     'GET /api/bens-detalhes' => __DIR__ . '/../routes/bens/details.php',
+    'GET /api/bens-excluidos' => __DIR__ . '/../routes/bens/excluidos.php',
 
     // Materiais de consumo
     'GET /api/materiais' => __DIR__ . '/../routes/materiais/list.php',
@@ -79,6 +80,14 @@ if (preg_match('#^/api/usuarios/(\d+)$#', $uri, $m)) {
 }
 
 // --- Bens ---
+if (preg_match('#^/api/bens/(\d+)/restaurar$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'POST') {
+        require __DIR__ . '/../routes/bens/restaurar.php';
+        exit;
+    }
+}
+
 if (preg_match('#^/api/bens/(\d+)$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
     if ($method === 'PUT' || $method === 'PATCH') {
