@@ -1,6 +1,7 @@
 <?php
 
 require __DIR__ . '/../../lib/http.php';
+require __DIR__ . '/../../config/config.php';
 
 cors();
 
@@ -14,14 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$dsn  = 'mysql:host=127.0.0.1;port=3307;dbname=secti;charset=utf8mb4';
-$user = 'secti';
-$pass = 'secti';
-
 try {
-    $pdo = new PDO($dsn, $user, $pass, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    ]);
+    $pdo = db();
 } catch (PDOException $e) {
     json(['error' => 'Erro ao conectar ao banco.'], 500);
     exit;
@@ -41,14 +36,14 @@ function colunaExiste(PDO $pdo, string $tabela, string $coluna): bool
         ':tabela' => $tabela,
         ':coluna' => $coluna,
     ]);
-    return (bool)$stmt->fetchColumn();
+    return (bool) $stmt->fetchColumn();
 }
 
 function gerarProximoPatrimonio(PDO $pdo): string
 {
     $stmt = $pdo->query("SELECT GET_LOCK('bens_patrimoniais_seq', 10) AS l");
     $lock = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$lock || (int)$lock['l'] !== 1) {
+    if (!$lock || (int) $lock['l'] !== 1) {
         throw new Exception('Não foi possível obter lock para gerar o tombamento.');
     }
 
@@ -59,10 +54,10 @@ function gerarProximoPatrimonio(PDO $pdo): string
             WHERE id_patrimonial REGEXP '^[0-9]{5}$'
         ");
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        $max = $row && $row['mx'] !== null ? (int)$row['mx'] : 0;
+        $max = $row && $row['mx'] !== null ? (int) $row['mx'] : 0;
 
         $next = $max + 1;
-        return str_pad((string)$next, 5, '0', STR_PAD_LEFT);
+        return str_pad((string) $next, 5, '0', STR_PAD_LEFT);
     } finally {
         $pdo->query("SELECT RELEASE_LOCK('bens_patrimoniais_seq')");
     }
@@ -74,33 +69,39 @@ $hasImg = colunaExiste($pdo, 'bens_patrimoniais', 'imagem_path');
 
 $input = json_decode(file_get_contents('php://input'), true) ?? [];
 
-$descricao       = trim($input['descricao'] ?? '');
-$tipoEletronico  = trim($input['tipo_eletronico'] ?? '');
-$estado          = trim($input['estado'] ?? 'ativo');
-$setorId         = !empty($input['setor_id']) ? (int)$input['setor_id'] : null;
-$salaId          = !empty($input['sala_id']) ? (int)$input['sala_id'] : null;
-$categoriaId     = !empty($input['categoria_id']) ? (int)$input['categoria_id'] : null;
-$responsavelId   = !empty($input['responsavel_usuario_id']) ? (int)$input['responsavel_usuario_id'] : null;
+$descricao = trim($input['descricao'] ?? '');
+$tipoEletronico = trim($input['tipo_eletronico'] ?? '');
+$estado = trim($input['estado'] ?? 'ativo');
+$setorId = !empty($input['setor_id']) ? (int) $input['setor_id'] : null;
+$salaId = !empty($input['sala_id']) ? (int) $input['sala_id'] : null;
+$categoriaId = !empty($input['categoria_id']) ? (int) $input['categoria_id'] : null;
+$responsavelId = !empty($input['responsavel_usuario_id']) ? (int) $input['responsavel_usuario_id'] : null;
 
 $tombamentoExistente = trim($input['tombamento_existente'] ?? '');
-if ($tombamentoExistente === '') $tombamentoExistente = null;
+if ($tombamentoExistente === '')
+    $tombamentoExistente = null;
 
 $valor = isset($input['valor']) && $input['valor'] !== ''
-    ? (float)$input['valor']
+    ? (float) $input['valor']
     : null;
 
 $observacao = isset($input['observacao']) ? trim($input['observacao']) : null;
-if ($observacao === '') $observacao = null;
+if ($observacao === '')
+    $observacao = null;
 
 $imagemPath = isset($input['imagem_path']) ? trim($input['imagem_path']) : null;
-if ($imagemPath === '') $imagemPath = null;
+if ($imagemPath === '')
+    $imagemPath = null;
 
 $erros = [];
-if ($descricao === '') $erros[] = 'descricao é obrigatória.';
-if ($tipoEletronico === '') $erros[] = 'tipo_eletronico é obrigatório.';
+if ($descricao === '')
+    $erros[] = 'descricao é obrigatória.';
+if ($tipoEletronico === '')
+    $erros[] = 'tipo_eletronico é obrigatório.';
 
 $estadosValidos = ['ativo', 'baixado', 'manutencao'];
-if (!in_array($estado, $estadosValidos, true)) $erros[] = 'estado inválido.';
+if (!in_array($estado, $estadosValidos, true))
+    $erros[] = 'estado inválido.';
 
 if ($erros) {
     json(['error' => 'Dados inválidos.', 'detalhes' => $erros], 422);
@@ -120,13 +121,25 @@ try {
     }
 
     $cols = array_merge($cols, [
-        'descricao', 'tipo_eletronico', 'estado', 'valor',
-        'setor_id', 'sala_id', 'categoria_id', 'responsavel_usuario_id'
+        'descricao',
+        'tipo_eletronico',
+        'estado',
+        'valor',
+        'setor_id',
+        'sala_id',
+        'categoria_id',
+        'responsavel_usuario_id'
     ]);
 
     $vals = array_merge($vals, [
-        ':descricao', ':tipo_eletronico', ':estado', ':valor',
-        ':setor_id', ':sala_id', ':categoria_id', ':responsavel_usuario_id'
+        ':descricao',
+        ':tipo_eletronico',
+        ':estado',
+        ':valor',
+        ':setor_id',
+        ':sala_id',
+        ':categoria_id',
+        ':responsavel_usuario_id'
     ]);
 
     $params = array_merge($params, [
@@ -158,7 +171,7 @@ try {
     $stmt = $pdo->prepare($sqlInsert);
     $stmt->execute($params);
 
-    $novoId = (int)$pdo->lastInsertId();
+    $novoId = (int) $pdo->lastInsertId();
 } catch (PDOException $e) {
     if ($e->getCode() === '23000') {
         json(['error' => 'Conflito ao gerar tombamento do sistema. Tente novamente.'], 409);
@@ -173,9 +186,12 @@ try {
 
 try {
     $selectExtras = [];
-    if ($hasTombamentoExistente) $selectExtras[] = "b.tombamento_existente";
-    if ($hasObs) $selectExtras[] = "b.observacao";
-    if ($hasImg) $selectExtras[] = "b.imagem_path";
+    if ($hasTombamentoExistente)
+        $selectExtras[] = "b.tombamento_existente";
+    if ($hasObs)
+        $selectExtras[] = "b.observacao";
+    if ($hasImg)
+        $selectExtras[] = "b.imagem_path";
 
     $extraSql = $selectExtras ? (",\n        " . implode(",\n        ", $selectExtras)) : "";
 
@@ -233,28 +249,28 @@ if (!empty($row['setor']) && !empty($row['sala'])) {
 }
 
 $bem = [
-    'id'                   => (int)$row['id'],
-    'patrimonial'          => $row['id_patrimonial'],
+    'id' => (int) $row['id'],
+    'patrimonial' => $row['id_patrimonial'],
     'tombamento_existente' => $hasTombamentoExistente ? ($row['tombamento_existente'] ?? null) : null,
 
-    'descricao'            => $row['descricao'],
-    'tipo_eletronico'      => $row['tipo_eletronico'],
+    'descricao' => $row['descricao'],
+    'tipo_eletronico' => $row['tipo_eletronico'],
 
-    'categoria_id'         => $row['categoria_id'] ? (int)$row['categoria_id'] : null,
-    'setor_id'             => $row['setor_id'] ? (int)$row['setor_id'] : null,
-    'sala_id'              => $row['sala_id'] ? (int)$row['sala_id'] : null,
-    'responsavel_usuario_id'=> $row['responsavel_usuario_id'] ? (int)$row['responsavel_usuario_id'] : null,
+    'categoria_id' => $row['categoria_id'] ? (int) $row['categoria_id'] : null,
+    'setor_id' => $row['setor_id'] ? (int) $row['setor_id'] : null,
+    'sala_id' => $row['sala_id'] ? (int) $row['sala_id'] : null,
+    'responsavel_usuario_id' => $row['responsavel_usuario_id'] ? (int) $row['responsavel_usuario_id'] : null,
 
-    'categoria'            => $row['categoria'],
-    'localizacao'          => $localizacao,
-    'responsavel'          => $row['responsavel'],
+    'categoria' => $row['categoria'],
+    'localizacao' => $localizacao,
+    'responsavel' => $row['responsavel'],
 
-    'estado'               => $row['estado'],
-    'data_aquisicao'       => $row['data_aquisicao'],
-    'valor'                => $row['valor'],
+    'estado' => $row['estado'],
+    'data_aquisicao' => $row['data_aquisicao'],
+    'valor' => $row['valor'],
 
-    'observacao'           => $hasObs ? ($row['observacao'] ?? null) : null,
-    'imagem_path'          => $hasImg ? ($row['imagem_path'] ?? null) : null,
+    'observacao' => $hasObs ? ($row['observacao'] ?? null) : null,
+    'imagem_path' => $hasImg ? ($row['imagem_path'] ?? null) : null,
 ];
 
 json($bem, 201);

@@ -1,6 +1,7 @@
 <?php
 
 require __DIR__ . '/../../lib/http.php';
+require __DIR__ . '/../../config/config.php';
 
 cors();
 
@@ -16,16 +17,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $input = json_decode(file_get_contents('php://input'), true) ?? [];
 
-$produtoBase   = trim($input['produto_base'] ?? '');
-$descricao     = trim($input['descricao'] ?? '');
-$unidade       = trim($input['unidade'] ?? '');
-$estoqueAtual  = isset($input['estoque_atual']) ? (int)$input['estoque_atual'] : 0;
-$localGuarda   = trim($input['local_guarda'] ?? '');
+$produtoBase = trim($input['produto_base'] ?? '');
+$descricao = trim($input['descricao'] ?? '');
+$unidade = trim($input['unidade'] ?? '');
+$estoqueAtual = isset($input['estoque_atual']) ? (int) $input['estoque_atual'] : 0;
+$localGuarda = trim($input['local_guarda'] ?? '');
 $valorUnitario = isset($input['valor_unitario']) && $input['valor_unitario'] !== ''
-    ? (float)$input['valor_unitario']
+    ? (float) $input['valor_unitario']
     : null;
-$criadoPorUsuarioId = isset($input['usuario_id']) ? (int)$input['usuario_id'] : null;
-$categoriaId        = null;
+$criadoPorUsuarioId = isset($input['usuario_id']) ? (int) $input['usuario_id'] : null;
+$categoriaId = null;
 
 $erros = [];
 
@@ -44,14 +45,8 @@ if ($erros) {
     exit;
 }
 
-$dsn  = 'mysql:host=127.0.0.1;port=3306;dbname=secti;charset=utf8mb4';
-$user = 'secti';
-$pass = 'secti';
-
 try {
-    $pdo = new PDO($dsn, $user, $pass, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    ]);
+    $pdo = db();
 } catch (PDOException $e) {
     json(['error' => 'Erro ao conectar ao banco.'], 500);
     exit;
@@ -90,18 +85,18 @@ try {
 
     $stmt = $pdo->prepare($sqlInsert);
     $stmt->execute([
-        ':codigo'               => $codigo,
-        ':produto_base'         => $produtoBase,
-        ':descricao'            => $descricao,
-        ':unidade'              => $unidade,
-        ':valor_unitario'       => $valorUnitario,
-        ':criado_por_usuario_id'=> $criadoPorUsuarioId,
-        ':estoque_atual'        => $estoqueAtual,
-        ':local_guarda'         => $localGuarda,
-        ':categoria_id'         => $categoriaId,
+        ':codigo' => $codigo,
+        ':produto_base' => $produtoBase,
+        ':descricao' => $descricao,
+        ':unidade' => $unidade,
+        ':valor_unitario' => $valorUnitario,
+        ':criado_por_usuario_id' => $criadoPorUsuarioId,
+        ':estoque_atual' => $estoqueAtual,
+        ':local_guarda' => $localGuarda,
+        ':categoria_id' => $categoriaId,
     ]);
 
-    $novoId = (int)$pdo->lastInsertId();
+    $novoId = (int) $pdo->lastInsertId();
 
     $sqlSelect = "
         SELECT
@@ -133,16 +128,16 @@ try {
     }
 
     $item = [
-        'id'              => (int)$row['id'],
-        'produto_base'    => $row['produto_base'],
-        'descricao'       => $row['descricao'],
-        'unidade'         => $row['unidade'],
-        'estoque_atual'   => (int)$row['estoque_atual'],
-        'valor_unitario'  => $row['valor_unitario'],
-        'local_guarda'    => $row['local_guarda'],
-        'categoria'       => $row['categoria'],
-        'usuario_cadastro'=> $row['usuario_cadastro'],
-        'data_cadastro'   => $row['criado_em'],
+        'id' => (int) $row['id'],
+        'produto_base' => $row['produto_base'],
+        'descricao' => $row['descricao'],
+        'unidade' => $row['unidade'],
+        'estoque_atual' => (int) $row['estoque_atual'],
+        'valor_unitario' => $row['valor_unitario'],
+        'local_guarda' => $row['local_guarda'],
+        'categoria' => $row['categoria'],
+        'usuario_cadastro' => $row['usuario_cadastro'],
+        'data_cadastro' => $row['criado_em'],
     ];
 
     json($item, 201);

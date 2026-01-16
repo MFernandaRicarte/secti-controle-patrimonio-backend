@@ -1,6 +1,7 @@
 <?php
 
 require __DIR__ . '/../../lib/http.php';
+require __DIR__ . '/../../config/config.php';
 
 cors();
 
@@ -14,14 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$dsn  = 'mysql:host=127.0.0.1;port=3306;dbname=secti;charset=utf8mb4';
-$user = 'secti';
-$pass = 'secti';
-
 try {
-    $pdo = new PDO($dsn, $user, $pass, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    ]);
+    $pdo = db();
 } catch (PDOException $e) {
     json(['error' => 'Erro ao conectar ao banco.'], 500);
     exit;
@@ -29,15 +24,15 @@ try {
 
 $input = json_decode(file_get_contents('php://input'), true) ?? [];
 
-$numero         = trim($input['numero'] ?? '');
-$modalidade     = trim($input['modalidade'] ?? '');
-$objeto         = trim($input['objeto'] ?? '');
-$secretariaId   = !empty($input['secretaria_id']) ? (int)$input['secretaria_id'] : null;
-$dataAbertura   = trim($input['data_abertura'] ?? '');
-$valorEstimado  = isset($input['valor_estimado']) && $input['valor_estimado'] !== ''
-    ? (float)$input['valor_estimado']
+$numero = trim($input['numero'] ?? '');
+$modalidade = trim($input['modalidade'] ?? '');
+$objeto = trim($input['objeto'] ?? '');
+$secretariaId = !empty($input['secretaria_id']) ? (int) $input['secretaria_id'] : null;
+$dataAbertura = trim($input['data_abertura'] ?? '');
+$valorEstimado = isset($input['valor_estimado']) && $input['valor_estimado'] !== ''
+    ? (float) $input['valor_estimado']
     : null;
-$status         = trim($input['status'] ?? 'planejamento');
+$status = trim($input['status'] ?? 'planejamento');
 
 $erros = [];
 
@@ -101,16 +96,16 @@ try {
 
     $stmt = $pdo->prepare($sqlInsert);
     $stmt->execute([
-        ':numero'         => $numero,
-        ':modalidade'     => $modalidade,
-        ':objeto'         => $objeto,
-        ':secretaria_id'  => $secretariaId,
-        ':data_abertura'  => $dataAbertura,
+        ':numero' => $numero,
+        ':modalidade' => $modalidade,
+        ':objeto' => $objeto,
+        ':secretaria_id' => $secretariaId,
+        ':data_abertura' => $dataAbertura,
         ':valor_estimado' => $valorEstimado,
-        ':status'         => $status,
+        ':status' => $status,
     ]);
 
-    $novoId = (int)$pdo->lastInsertId();
+    $novoId = (int) $pdo->lastInsertId();
 } catch (PDOException $e) {
     if ($e->getCode() === '23000') {
         json(['error' => 'Já existe uma licitação com este número.'], 409);
@@ -155,17 +150,17 @@ try {
 }
 
 $licitacao = [
-    'id'             => (int)$row['id'],
-    'numero'         => $row['numero'],
-    'modalidade'     => $row['modalidade'],
-    'objeto'         => $row['objeto'],
-    'secretaria_id'  => $row['secretaria_id'] ? (int)$row['secretaria_id'] : null,
-    'secretaria'     => $row['secretaria'],
-    'data_abertura'  => $row['data_abertura'],
+    'id' => (int) $row['id'],
+    'numero' => $row['numero'],
+    'modalidade' => $row['modalidade'],
+    'objeto' => $row['objeto'],
+    'secretaria_id' => $row['secretaria_id'] ? (int) $row['secretaria_id'] : null,
+    'secretaria' => $row['secretaria'],
+    'data_abertura' => $row['data_abertura'],
     'valor_estimado' => $row['valor_estimado'],
-    'status'         => $row['status'],
-    'criado_em'      => $row['criado_em'],
-    'atualizado_em'  => $row['atualizado_em'],
+    'status' => $row['status'],
+    'criado_em' => $row['criado_em'],
+    'atualizado_em' => $row['atualizado_em'],
 ];
 
 json($licitacao, 201);
