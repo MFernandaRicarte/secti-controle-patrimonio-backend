@@ -85,6 +85,8 @@ if (!$sets) {
     json(['error' => 'Nenhum campo para atualizar'], 400);
 }
 
+$sets[] = "atualizado_em = NOW()";
+
 $sql = "UPDATE licitacoes SET " . implode(', ', $sets) . " WHERE id = :id";
 $params[':id'] = $id;
 

@@ -173,6 +173,28 @@ if (preg_match('#^/api/licitacoes/(\d+)$#', $uri, $m)) {
     }
 }
 
+//Rota para detalhes da licitação
+if (preg_match('#^/api/licitacoes/(\d+)/detalhes$#', $uri, $m)) {
+    $id = (int)$m[1];
+    $GLOBALS['routeParams'] = ['id' => $id];
+
+    if ($method === 'GET') {
+        require __DIR__.'/../routes/licitacoes_detalhes.php';
+        exit;
+    }
+}
+
+//Rota para upload de documentos da licitação
+if (preg_match('#^/api/licitacoes/(\d+)/documentos$#', $uri, $m)) {
+    $id = (int)$m[1];
+    $GLOBALS['routeParams'] = ['id' => $id];
+
+    if ($method === 'POST') {
+        require __DIR__.'/../routes/licitacoes_documentos.php';
+        exit;
+    }
+}
+
 require __DIR__.'/../lib/http.php';
 cors();
 json(['error' => 'Not Found', 'path' => $uri], 404);
