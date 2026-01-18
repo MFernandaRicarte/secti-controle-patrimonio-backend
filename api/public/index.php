@@ -54,6 +54,11 @@ $routes = [
     // LHS - Cursos
     'GET /api/lhs/cursos' => __DIR__ . '/../routes/lhs/cursos/list.php',
     'POST /api/lhs/cursos' => __DIR__ . '/../routes/lhs/cursos/create.php',
+
+    // Healthcheck
+    'GET /api/ping'    => __DIR__ . '/../routes/ping.php',
+    'GET /api/ping_db' => __DIR__ . '/../routes/ping_db.php',
+
 ];
 
 $key = $method . ' ' . $uri;
