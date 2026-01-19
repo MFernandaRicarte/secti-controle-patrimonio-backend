@@ -62,6 +62,13 @@ $routes = [
     // LHS - Turmas
     'GET /api/lhs/turmas' => __DIR__ . '/../routes/lhs/turmas/list.php',
     'POST /api/lhs/turmas' => __DIR__ . '/../routes/lhs/turmas/create.php',
+
+    // LHS - Cursos (público)
+    'GET /api/lhs/cursos/ativos' => __DIR__ . '/../routes/lhs/cursos/list_ativos.php',
+
+    // LHS - Inscrições
+    'GET /api/lhs/inscricoes' => __DIR__ . '/../routes/lhs/inscricoes/list.php',
+    'POST /api/lhs/inscricoes' => __DIR__ . '/../routes/lhs/inscricoes/create.php',
 ];
 
 $key = $method . ' ' . $uri;
@@ -290,6 +297,23 @@ if (preg_match('#^/api/lhs/turmas/(\d+)/alunos/(\d+)$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => (int) $m[1], 'aluno_id' => (int) $m[2]];
     if ($method === 'DELETE') {
         require __DIR__ . '/../routes/lhs/turmas/alunos/remover.php';
+        exit;
+    }
+}
+
+// --- LHS Inscrições ---
+if (preg_match('#^/api/lhs/inscricoes/(\d+)/aprovar$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'PUT' || $method === 'PATCH') {
+        require __DIR__ . '/../routes/lhs/inscricoes/aprovar.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/lhs/inscricoes/(\d+)/rejeitar$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'PUT' || $method === 'PATCH') {
+        require __DIR__ . '/../routes/lhs/inscricoes/rejeitar.php';
         exit;
     }
 }
