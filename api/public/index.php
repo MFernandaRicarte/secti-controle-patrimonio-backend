@@ -61,9 +61,9 @@ $routes = [
 
     // Notificações
     'GET /api/notificacoes' => __DIR__ . '/../routes/notificacoes/list.php',
-    'POST /api/notificacoes' => __DIR__ . '/../routes/notificacoes/create.php', // superadmin
+    'POST /api/notificacoes' => __DIR__ . '/../routes/notificacoes/create.php',
     'POST /api/notificacoes/marcar-lida' => __DIR__ . '/../routes/notificacoes/marcar_lida.php',
-
+    'POST /api/notificacoes/solicitacao-material' => __DIR__ . '/../routes/notificacoes/solicitacao_material.php',
 
 ];
 
