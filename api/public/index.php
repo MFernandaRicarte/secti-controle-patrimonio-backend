@@ -59,6 +59,12 @@ $routes = [
     'GET /api/ping'    => __DIR__ . '/../routes/ping.php',
     'GET /api/ping_db' => __DIR__ . '/../routes/ping_db.php',
 
+    // Notificações
+    'GET /api/notificacoes' => __DIR__ . '/../routes/notificacoes/list.php',
+    'POST /api/notificacoes' => __DIR__ . '/../routes/notificacoes/create.php', // superadmin
+    'POST /api/notificacoes/marcar-lida' => __DIR__ . '/../routes/notificacoes/marcar_lida.php',
+
+
 ];
 
 $key = $method . ' ' . $uri;
