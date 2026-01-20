@@ -1,4 +1,16 @@
 <?php
+// =============================================================================
+// CORS - Habilitar acesso cross-origin
+// =============================================================================
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-User-Id');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -69,6 +81,10 @@ $routes = [
     // LHS - Inscrições
     'GET /api/lhs/inscricoes' => __DIR__ . '/../routes/lhs/inscricoes/list.php',
     'POST /api/lhs/inscricoes' => __DIR__ . '/../routes/lhs/inscricoes/create.php',
+
+    // LHS - Aulas e Presenças
+    'GET /api/lhs/aulas' => __DIR__ . '/../routes/lhs/aulas/list.php',
+    'POST /api/lhs/aulas' => __DIR__ . '/../routes/lhs/aulas/create.php',
 ];
 
 $key = $method . ' ' . $uri;
@@ -287,6 +303,10 @@ if (preg_match('#^/api/lhs/turmas/(\d+)/detalhes$#', $uri, $m)) {
 // --- LHS Turmas - Matrículas ---
 if (preg_match('#^/api/lhs/turmas/(\d+)/alunos$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'GET') {
+        require __DIR__ . '/../routes/lhs/turmas/alunos/list.php';
+        exit;
+    }
     if ($method === 'POST') {
         require __DIR__ . '/../routes/lhs/turmas/alunos/matricular.php';
         exit;
@@ -314,6 +334,23 @@ if (preg_match('#^/api/lhs/inscricoes/(\d+)/rejeitar$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
     if ($method === 'PUT' || $method === 'PATCH') {
         require __DIR__ . '/../routes/lhs/inscricoes/rejeitar.php';
+        exit;
+    }
+}
+
+// --- LHS Aulas ---
+if (preg_match('#^/api/lhs/aulas/(\d+)$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'GET') {
+        require __DIR__ . '/../routes/lhs/aulas/details.php';
+        exit;
+    }
+    if ($method === 'PUT' || $method === 'PATCH') {
+        require __DIR__ . '/../routes/lhs/aulas/update.php';
+        exit;
+    }
+    if ($method === 'DELETE') {
+        require __DIR__ . '/../routes/lhs/aulas/delete.php';
         exit;
     }
 }

@@ -97,16 +97,21 @@ CREATE TABLE IF NOT EXISTS lhs_turma_alunos (
 ) ENGINE=InnoDB;
 
 -- ===== AULAS =====
--- Registro de aulas de cada turma
+-- Registro de aulas de cada turma com conteúdo ministrado
 CREATE TABLE IF NOT EXISTS lhs_aulas (
   id INT AUTO_INCREMENT PRIMARY KEY,
   turma_id INT NOT NULL,
   data_aula DATE NOT NULL,
+  conteudo_ministrado TEXT NOT NULL COMMENT 'Conteúdo ministrado nesta aula (obrigatório)',
   observacao TEXT NULL COMMENT 'Observações gerais da aula',
+  registrado_por INT NULL COMMENT 'ID do usuário (professor) que registrou',
   criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_lhs_aulas_turma
     FOREIGN KEY (turma_id) REFERENCES lhs_turmas(id)
     ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_lhs_aulas_registrado_por
+    FOREIGN KEY (registrado_por) REFERENCES usuarios(id)
+    ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT unq_lhs_aula_turma_data
     UNIQUE (turma_id, data_aula),
   INDEX idx_lhs_aulas_turma (turma_id),
@@ -114,13 +119,12 @@ CREATE TABLE IF NOT EXISTS lhs_aulas (
 ) ENGINE=InnoDB;
 
 -- ===== PRESENÇAS =====
--- Registro de presença com conteúdo ministrado
+-- Registro de presença dos alunos em cada aula
 CREATE TABLE IF NOT EXISTS lhs_presencas (
   id INT AUTO_INCREMENT PRIMARY KEY,
   aula_id INT NOT NULL,
   aluno_id INT NOT NULL,
   presente BOOLEAN NOT NULL DEFAULT FALSE,
-  conteudo_ministrado TEXT NULL COMMENT 'Conteúdo ministrado nesta aula',
   registrado_por INT NULL COMMENT 'ID do usuário (professor) que registrou',
   criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_lhs_presencas_aula
