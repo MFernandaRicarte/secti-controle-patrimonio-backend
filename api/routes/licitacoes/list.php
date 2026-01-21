@@ -2,8 +2,13 @@
 
 require __DIR__ . '/../../lib/http.php';
 require __DIR__ . '/../../config/config.php';
+require __DIR__ . '/../../lib/db.php';
+require __DIR__ . '/../../lib/cors.php';
+require __DIR__ . '/../../lib/auth.php';
 
 cors();
+
+$usuario = requireAuth();
 
 header('Content-Type: application/json; charset=utf-8');
 

@@ -1,4 +1,3 @@
---UP
 DROP TABLE IF EXISTS licitacoes_documentos;
 
 CREATE TABLE licitacoes_documentos (

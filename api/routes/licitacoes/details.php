@@ -1,9 +1,24 @@
 <?php
 
+// Habilita exibição de erros para debug
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('log_errors', 1);
+
 require __DIR__ . '/../../lib/http.php';
 require __DIR__ . '/../../lib/db.php';
+require __DIR__ . '/../../lib/auth.php';
 
 cors();
+
+try {
+    $usuario = requireAuth();
+} catch (Exception $e) {
+    error_log("Erro na autenticação: " . $e->getMessage());
+    http_response_code(401);
+    echo json_encode(['error' => 'Não autorizado', 'details' => $e->getMessage()]);
+    exit;
+}
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -28,13 +43,28 @@ if (!is_numeric($id) || $id <= 0) {
     exit;
 }
 
-$pdo = db();
+error_log("Buscando detalhes da licitação ID: $id");
+
+try {
+    $pdo = db();
+    error_log("Conexão com banco estabelecida");
+} catch (Exception $e) {
+    error_log("Erro ao conectar ao banco: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode([
+        'error' => 'Erro ao conectar ao banco de dados.',
+        'details' => $e->getMessage()
+    ]);
+    exit;
+}
 
 try {
     // Verificar se a licitação existe
+    error_log("Verificando se licitação existe");
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM licitacoes WHERE id = ?");
     $stmt->execute([$id]);
     if ($stmt->fetchColumn() == 0) {
+        error_log("Licitação não encontrada: $id");
         http_response_code(404);
         echo json_encode([
             'error' => 'Licitação não encontrada.',
@@ -43,6 +73,7 @@ try {
     }
 
     // Dados da licitação
+    error_log("Buscando dados da licitação");
     $sqlLicitacao = "
         SELECT
             l.id,
@@ -70,7 +101,17 @@ try {
     $stmt->execute([$id]);
     $licitacao = $stmt->fetch(PDO::FETCH_ASSOC);
 
+    if (!$licitacao) {
+        error_log("Licitação retornou vazia após busca: $id");
+        http_response_code(404);
+        echo json_encode(['error' => 'Dados da licitação não encontrados.']);
+        exit;
+    }
+
+    error_log("Licitação encontrada: " . $licitacao['numero']);
+
     // Fases
+    error_log("Buscando fases");
     $sqlFases = "
         SELECT
             lf.id,
@@ -90,8 +131,10 @@ try {
     $stmt = $pdo->prepare($sqlFases);
     $stmt->execute([$id]);
     $fases = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    error_log("Fases encontradas: " . count($fases));
 
-    // Documentos - CORRIGIDO: usando os nomes corretos das colunas
+    // Documentos
+    error_log("Buscando documentos");
     $sqlDocumentos = "
         SELECT
             ld.id,
@@ -110,13 +153,15 @@ try {
     $stmt = $pdo->prepare($sqlDocumentos);
     $stmt->execute([$id]);
     $documentos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    error_log("Documentos encontrados: " . count($documentos));
 
     // Tramitações
+    error_log("Buscando tramitações");
     $sqlTramitacoes = "
         SELECT
             t.id,
             t.acao,
-            t.descricao AS parecer,
+            t.parecer,
             t.usuario_id,
             u.nome AS usuario_nome,
             t.criado_em
@@ -128,15 +173,16 @@ try {
     $stmt = $pdo->prepare($sqlTramitacoes);
     $stmt->execute([$id]);
     $tramitacoes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    error_log("Tramitações encontradas: " . count($tramitacoes));
 
     // Alertas
+    error_log("Buscando alertas");
     $sqlAlertas = "
         SELECT
             a.id,
             a.tipo,
-            a.titulo AS descricao,
+            a.descricao,
             a.data_vencimento,
-            a.prioridade,
             a.status,
             a.criado_em
         FROM alertas a
@@ -146,8 +192,10 @@ try {
     $stmt = $pdo->prepare($sqlAlertas);
     $stmt->execute([$id]);
     $alertas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    error_log("Alertas encontrados: " . count($alertas));
 
     // Resposta
+    error_log("Montando resposta");
     $response = [
         'licitacao' => [
             'id' => (int) $licitacao['id'],
@@ -196,7 +244,7 @@ try {
                 'id' => (int) $tram['id'],
                 'acao' => $tram['acao'],
                 'parecer' => $tram['parecer'],
-                'usuario_id' => (int) $tram['usuario_id'],
+                'usuario_id' => $tram['usuario_id'] ? (int) $tram['usuario_id'] : null,
                 'usuario_nome' => $tram['usuario_nome'],
                 'criado_em' => $tram['criado_em'],
             ];
@@ -207,18 +255,30 @@ try {
                 'tipo' => $alerta['tipo'],
                 'descricao' => $alerta['descricao'],
                 'data_vencimento' => $alerta['data_vencimento'],
-                'prioridade' => $alerta['prioridade'],
                 'status' => $alerta['status'],
                 'criado_em' => $alerta['criado_em'],
             ];
         }, $alertas),
     ];
 
-    echo json_encode($response);
+    error_log("Enviando resposta com sucesso");
+    echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
 } catch (PDOException $e) {
+    error_log("Erro PDO em licitacoes/details.php: " . $e->getMessage());
+    error_log("Stack trace: " . $e->getTraceAsString());
     http_response_code(500);
     echo json_encode([
         'error' => 'Erro ao buscar detalhes da licitação.',
+        'details' => $e->getMessage(),
+        'code' => $e->getCode()
+    ]);
+} catch (Exception $e) {
+    error_log("Erro geral em licitacoes/details.php: " . $e->getMessage());
+    error_log("Stack trace: " . $e->getTraceAsString());
+    http_response_code(500);
+    echo json_encode([
+        'error' => 'Erro interno do servidor.',
         'details' => $e->getMessage(),
     ]);
 }

@@ -1,7 +1,3 @@
--- ============================================================
--- LAN HOUSE SOCIAL - MIGRAÇÃO 0014: CURSOS
--- Tabela de cursos oferecidos
--- ============================================================
 
 CREATE TABLE IF NOT EXISTS lhs_cursos (
   id INT AUTO_INCREMENT PRIMARY KEY,

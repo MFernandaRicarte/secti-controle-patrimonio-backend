@@ -2,6 +2,8 @@
 
 require __DIR__ . '/../../lib/http.php';
 require __DIR__ . '/../../config/config.php';
+require __DIR__ . '/../../lib/auth.php';
+require __DIR__ . '/../../lib/cors.php';
 
 cors();
 
@@ -14,6 +16,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     json(['error' => 'Método não permitido. Use POST.'], 405);
     exit;
 }
+
+// Obter usuário autenticado
+$usuario = requireAuth();
+$usuarioId = (int) $usuario['id'];
 
 try {
     $pdo = db();
@@ -82,7 +88,9 @@ try {
             secretaria_id,
             data_abertura,
             valor_estimado,
-            status
+            status,
+            criado_por,
+            atualizado_por
         ) VALUES (
             :numero,
             :modalidade,
@@ -90,7 +98,9 @@ try {
             :secretaria_id,
             :data_abertura,
             :valor_estimado,
-            :status
+            :status,
+            :criado_por,
+            :atualizado_por
         )
     ";
 
@@ -103,6 +113,8 @@ try {
         ':data_abertura' => $dataAbertura,
         ':valor_estimado' => $valorEstimado,
         ':status' => $status,
+        ':criado_por' => $usuarioId,
+        ':atualizado_por' => $usuarioId,
     ]);
 
     $novoId = (int) $pdo->lastInsertId();
@@ -122,17 +134,21 @@ try {
             l.numero,
             l.modalidade,
             l.objeto,
-            
             l.secretaria_id,
             s.nome AS secretaria,
-            
             l.data_abertura,
             l.valor_estimado,
             l.status,
+            l.criado_por,
+            u_criado.nome AS criado_por_nome,
+            l.atualizado_por,
+            u_atualizado.nome AS atualizado_por_nome,
             l.criado_em,
             l.atualizado_em
         FROM licitacoes l
         LEFT JOIN setores s ON s.id = l.secretaria_id
+        LEFT JOIN usuarios u_criado ON u_criado.id = l.criado_por
+        LEFT JOIN usuarios u_atualizado ON u_atualizado.id = l.atualizado_por
         WHERE l.id = :id
     ";
 
@@ -159,6 +175,10 @@ $licitacao = [
     'data_abertura' => $row['data_abertura'],
     'valor_estimado' => $row['valor_estimado'],
     'status' => $row['status'],
+    'criado_por' => $row['criado_por'] ? (int) $row['criado_por'] : null,
+    'criado_por_nome' => $row['criado_por_nome'],
+    'atualizado_por' => $row['atualizado_por'] ? (int) $row['atualizado_por'] : null,
+    'atualizado_por_nome' => $row['atualizado_por_nome'],
     'criado_em' => $row['criado_em'],
     'atualizado_em' => $row['atualizado_em'],
 ];

@@ -1,8 +1,13 @@
 <?php
 require __DIR__ . '/../../lib/db.php';
 require __DIR__ . '/../../lib/http.php';
+require __DIR__ . '/../../lib/cors.php';
+require __DIR__ . '/../../lib/auth.php';
+
 
 cors();
+
+$usuario = requireAuth();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
     json(['error' => 'Method Not Allowed'], 405);

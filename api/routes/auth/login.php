@@ -1,6 +1,8 @@
 <?php
 require __DIR__ . '/../../lib/http.php';
 require __DIR__ . '/../../config/config.php';
+require __DIR__ . '/../../lib/jwt.php';
+
 
 cors();
 
@@ -47,11 +49,17 @@ try {
     // tudo certo: remove o hash antes de devolver
     unset($user['senha_hash']);
 
-    // aqui no futuro podemos gerar token / sessão etc.
+    $token = jwt_generate([
+        'uid' => $user['id'],
+        'perfil_id' => $user['perfil_id'],
+    ]);
+
     json([
         'message' => 'Login realizado com sucesso',
+        'token'   => $token,
         'usuario' => $user,
     ]);
+
 } catch (Throwable $e) {
     json(['error' => $e->getMessage()], 500);
 }
