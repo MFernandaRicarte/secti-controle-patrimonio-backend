@@ -47,9 +47,23 @@ $routes = [
     'GET /api/transferencias' => __DIR__ . '/../routes/transferencias/list.php',
     'POST /api/transferencias' => __DIR__ . '/../routes/transferencias/create.php',
 
+    // Fases (tramitações)
+    'GET /api/fases' => __DIR__ . '/../routes/fases/list.php',
+    'POST /api/fases' => __DIR__ . '/../routes/fases/create.php',
+    'PUT /api/fases' => __DIR__ . '/../routes/fases/update.php',
+    'DELETE /api/fases' => __DIR__ . '/../routes/fases/delete.php',
+
+    // Tramitações de bens
+    'GET /api/bens/tramitacoes' => __DIR__ . '/../routes/bens/tramitacoes_list.php',
+    'POST /api/bens/tramitacoes' => __DIR__ . '/../routes/bens/tramitacoes_create.php',
+
     // Licitações
     'GET /api/licitacoes' => __DIR__ . '/../routes/licitacoes/list.php',
     'POST /api/licitacoes/cadastro' => __DIR__ . '/../routes/licitacoes/create.php',
+    'GET /api/licitacoes/tramitacoes' => __DIR__ . '/../routes/licitacoes/tramitacoes_list.php',
+    'POST /api/licitacoes/tramitacoes' => __DIR__ . '/../routes/licitacoes/tramitacoes_create.php',
+    'POST /api/licitacoes/fases' => __DIR__ . '/../routes/licitacoes/fases_create.php',
+    'DELETE /api/licitacoes/fases' => __DIR__ . '/../routes/licitacoes/fases_delete.php',
 
     // LHS - Cursos
     'GET /api/lhs/cursos' => __DIR__ . '/../routes/lhs/cursos/list.php',
