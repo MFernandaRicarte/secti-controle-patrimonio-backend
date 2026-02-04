@@ -8,63 +8,67 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 $routes = [
     // Healthcheck
-    'GET /api/ping' => __DIR__ . '/../routes/ping.php',
+    'GET /api/ping'    => __DIR__ . '/../routes/ping.php',
+    'GET /api/ping_db' => __DIR__ . '/../routes/ping_db.php',
 
     // Auth
     'POST /api/login' => __DIR__ . '/../routes/auth/login.php',
 
     // Usuários
-    'GET /api/usuarios' => __DIR__ . '/../routes/usuarios/list.php',
+    'GET /api/usuarios'  => __DIR__ . '/../routes/usuarios/list.php',
     'POST /api/usuarios' => __DIR__ . '/../routes/usuarios/create.php',
 
     // Setores
-    'GET /api/setores' => __DIR__ . '/../routes/setores/list.php',
+    'GET /api/setores'  => __DIR__ . '/../routes/setores/list.php',
     'POST /api/setores' => __DIR__ . '/../routes/setores/create.php',
 
     // Salas
-    'GET /api/salas' => __DIR__ . '/../routes/salas/list.php',
+    'GET /api/salas'  => __DIR__ . '/../routes/salas/list.php',
     'POST /api/salas' => __DIR__ . '/../routes/salas/create.php',
 
     // Bens
-    'GET /api/bens' => __DIR__ . '/../routes/bens/list.php',
-    'POST /api/bens' => __DIR__ . '/../routes/bens/create.php',
-    'POST /api/bens/upload' => __DIR__ . '/../routes/bens/upload.php',
+    'GET /api/bens'          => __DIR__ . '/../routes/bens/list.php',
+    'POST /api/bens'         => __DIR__ . '/../routes/bens/create.php',
+    'POST /api/bens/upload'  => __DIR__ . '/../routes/bens/upload.php',
     'GET /api/bens-detalhes' => __DIR__ . '/../routes/bens/details.php',
-    'GET /api/bens-excluidos' => __DIR__ . '/../routes/bens/excluidos.php',
+    'GET /api/bens-excluidos'=> __DIR__ . '/../routes/bens/excluidos.php',
 
     // Materiais de consumo
-    'GET /api/materiais' => __DIR__ . '/../routes/materiais/list.php',
+    'GET /api/materiais'  => __DIR__ . '/../routes/materiais/list.php',
     'POST /api/materiais' => __DIR__ . '/../routes/materiais/create.php',
 
     // Tipos básicos
-    'GET /api/tipos-materiais' => __DIR__ . '/../routes/tipos/materiais/list.php',
+    'GET /api/tipos-materiais'  => __DIR__ . '/../routes/tipos/materiais/list.php',
     'POST /api/tipos-materiais' => __DIR__ . '/../routes/tipos/materiais/create.php',
 
-    'GET /api/tipos-eletronicos' => __DIR__ . '/../routes/tipos/eletronicos/list.php',
+    'GET /api/tipos-eletronicos'  => __DIR__ . '/../routes/tipos/eletronicos/list.php',
     'POST /api/tipos-eletronicos' => __DIR__ . '/../routes/tipos/eletronicos/create.php',
 
     // Transferências
-    'GET /api/transferencias' => __DIR__ . '/../routes/transferencias/list.php',
+    'GET /api/transferencias'  => __DIR__ . '/../routes/transferencias/list.php',
     'POST /api/transferencias' => __DIR__ . '/../routes/transferencias/create.php',
 
     // Licitações
-    'GET /api/licitacoes' => __DIR__ . '/../routes/licitacoes/list.php',
+    'GET /api/licitacoes'           => __DIR__ . '/../routes/licitacoes/list.php',
     'POST /api/licitacoes/cadastro' => __DIR__ . '/../routes/licitacoes/create.php',
 
+    // Notificações
+    'GET /api/notificacoes'                      => __DIR__ . '/../routes/notificacoes/list.php',
+    'POST /api/notificacoes'                     => __DIR__ . '/../routes/notificacoes/create.php',
+    'POST /api/notificacoes/marcar-lida'         => __DIR__ . '/../routes/notificacoes/marcar_lida.php',
+    'POST /api/notificacoes/solicitacao-material'=> __DIR__ . '/../routes/notificacoes/solicitacao_material.php',
+
     // LHS - Cursos
-    'GET /api/lhs/cursos' => __DIR__ . '/../routes/lhs/cursos/list.php',
+    'GET /api/lhs/cursos'  => __DIR__ . '/../routes/lhs/cursos/list.php',
     'POST /api/lhs/cursos' => __DIR__ . '/../routes/lhs/cursos/create.php',
 
-    // Healthcheck
-    'GET /api/ping'    => __DIR__ . '/../routes/ping.php',
-    'GET /api/ping_db' => __DIR__ . '/../routes/ping_db.php',
+    // LHS - Alunos
+    'GET /api/lhs/alunos'  => __DIR__ . '/../routes/lhs/alunos/list.php',
+    'POST /api/lhs/alunos' => __DIR__ . '/../routes/lhs/alunos/create.php',
 
-    // Notificações
-    'GET /api/notificacoes' => __DIR__ . '/../routes/notificacoes/list.php',
-    'POST /api/notificacoes' => __DIR__ . '/../routes/notificacoes/create.php',
-    'POST /api/notificacoes/marcar-lida' => __DIR__ . '/../routes/notificacoes/marcar_lida.php',
-    'POST /api/notificacoes/solicitacao-material' => __DIR__ . '/../routes/notificacoes/solicitacao_material.php',
-
+    // LHS - Turmas
+    'GET /api/lhs/turmas'  => __DIR__ . '/../routes/lhs/turmas/list.php',
+    'POST /api/lhs/turmas' => __DIR__ . '/../routes/lhs/turmas/create.php',
 ];
 
 $key = $method . ' ' . $uri;
@@ -242,6 +246,57 @@ if (preg_match('#^/api/lhs/cursos/(\d+)/materiais/(\d+)$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => (int) $m[1], 'material_id' => (int) $m[2]];
     if ($method === 'DELETE') {
         require __DIR__ . '/../routes/lhs/cursos/materiais/delete.php';
+        exit;
+    }
+}
+
+// --- LHS Alunos ---
+if (preg_match('#^/api/lhs/alunos/(\d+)$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'PUT' || $method === 'PATCH') {
+        require __DIR__ . '/../routes/lhs/alunos/update.php';
+        exit;
+    }
+    if ($method === 'DELETE') {
+        require __DIR__ . '/../routes/lhs/alunos/delete.php';
+        exit;
+    }
+}
+
+// --- LHS Turmas ---
+if (preg_match('#^/api/lhs/turmas/(\d+)$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'PUT' || $method === 'PATCH') {
+        require __DIR__ . '/../routes/lhs/turmas/update.php';
+        exit;
+    }
+    if ($method === 'DELETE') {
+        require __DIR__ . '/../routes/lhs/turmas/delete.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/lhs/turmas/(\d+)/detalhes$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'GET') {
+        require __DIR__ . '/../routes/lhs/turmas/details.php';
+        exit;
+    }
+}
+
+// --- LHS Turmas - Matrículas ---
+if (preg_match('#^/api/lhs/turmas/(\d+)/alunos$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'POST') {
+        require __DIR__ . '/../routes/lhs/turmas/alunos/matricular.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/lhs/turmas/(\d+)/alunos/(\d+)$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1], 'aluno_id' => (int) $m[2]];
+    if ($method === 'DELETE') {
+        require __DIR__ . '/../routes/lhs/turmas/alunos/remover.php';
         exit;
     }
 }
