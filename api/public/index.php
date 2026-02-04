@@ -17,6 +17,10 @@ $routes = [
     'GET /api/usuarios' => __DIR__ . '/../routes/usuarios/list.php',
     'POST /api/usuarios' => __DIR__ . '/../routes/usuarios/create.php',
 
+    // Fornecedores
+    'GET /api/fornecedores' => __DIR__ . '/../routes/fornecedores/list.php',
+    'POST /api/fornecedores' => __DIR__ . '/../routes/fornecedores/create.php',
+
     // Setores
     'GET /api/setores' => __DIR__ . '/../routes/setores/list.php',
     'POST /api/setores' => __DIR__ . '/../routes/setores/create.php',
@@ -64,6 +68,18 @@ $routes = [
     'POST /api/licitacoes/tramitacoes' => __DIR__ . '/../routes/licitacoes/tramitacoes_create.php',
     'POST /api/licitacoes/fases' => __DIR__ . '/../routes/licitacoes/fases_create.php',
     'DELETE /api/licitacoes/fases' => __DIR__ . '/../routes/licitacoes/fases_delete.php',
+
+    // Contratos
+    'GET /api/contratos' => __DIR__ . '/../routes/contratos/list.php',
+    'POST /api/contratos' => __DIR__ . '/../routes/contratos/create.php',
+
+    // Empenhos
+    'GET /api/empenhos' => __DIR__ . '/../routes/empenhos/list.php',
+    'POST /api/empenhos' => __DIR__ . '/../routes/empenhos/create.php',
+
+    // Dispensas
+    'GET /api/dispensas' => __DIR__ . '/../routes/dispensas/list.php',
+    'POST /api/dispensas' => __DIR__ . '/../routes/dispensas/create.php',
 
     // LHS - Cursos
     'GET /api/lhs/cursos' => __DIR__ . '/../routes/lhs/cursos/list.php',
@@ -161,6 +177,23 @@ if (preg_match('#^/api/tipos-eletronicos/(\d+)$#', $uri, $m)) {
     }
 }
 
+// --- Fornecedores ---
+if (preg_match('#^/api/fornecedores/(\d+)$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'GET') {
+        require __DIR__ . '/../routes/fornecedores/detail.php';
+        exit;
+    }
+    if ($method === 'PUT' || $method === 'PATCH') {
+        require __DIR__ . '/../routes/fornecedores/detail.php';
+        exit;
+    }
+    if ($method === 'DELETE') {
+        require __DIR__ . '/../routes/fornecedores/detail.php';
+        exit;
+    }
+}
+
 // --- Setores ---
 if (preg_match('#^/api/setores/(\d+)$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
@@ -216,6 +249,59 @@ if (preg_match('#^/api/licitacoes/(\d+)/documentos$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
     if ($method === 'POST') {
         require __DIR__ . '/../routes/licitacoes/documentos.php';
+        exit;
+    }
+}
+
+// --- Contratos ---
+if (preg_match('#^/api/contratos/(\d+)/detalhes$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'GET') {
+        require __DIR__ . '/../routes/contratos/details.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/contratos/(\d+)/documentos$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'GET' || $method === 'POST') {
+        require __DIR__ . '/../routes/contratos/documentos.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/contratos/(\d+)$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'PUT' || $method === 'PATCH') {
+        require __DIR__ . '/../routes/contratos/update.php';
+        exit;
+    }
+    if ($method === 'DELETE') {
+        require __DIR__ . '/../routes/contratos/delete.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/contratos/(\d+)/fiscais$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'POST') {
+        require __DIR__ . '/../routes/contratos/fiscais_create.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/contratos/(\d+)/gestores$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'POST') {
+        require __DIR__ . '/../routes/contratos/gestores_create.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/contratos/(\d+)/fiscais/(\d+)$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1], 'fiscal_id' => (int) $m[2]];
+    if ($method === 'DELETE') {
+        require __DIR__ . '/../routes/contratos/fiscais_remove.php';
         exit;
     }
 }
