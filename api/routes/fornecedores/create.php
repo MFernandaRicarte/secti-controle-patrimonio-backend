@@ -1,55 +1,58 @@
 <?php
 require_once __DIR__ . '/../../lib/http.php';
 require_once __DIR__ . '/../../lib/auth.php';
-require_once __DIR__ . '/../../lib/db.php';
 require_once __DIR__ . '/../../lib/cors.php';
 
 cors();
-
-// Verificar autenticação
 $usuario = requireAuth();
 
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    json(['sucesso' => false, 'error' => 'Método não permitido'], 405);
+}
+
+$input = json_decode(file_get_contents('php://input'), true) ?? [];
+
+$nome = trim($input['nome'] ?? '');
+$cnpj = preg_replace('/\D+/', '', (string)($input['cnpj'] ?? ''));
+$email = trim($input['email'] ?? '');
+$telefone = trim($input['telefone'] ?? '');
+
+if ($nome === '') json(['sucesso' => false, 'error' => 'Nome é obrigatório'], 422);
+if ($cnpj === '') json(['sucesso' => false, 'error' => 'CNPJ é obrigatório'], 422);
+
 try {
-    $pdo = getDB();
-    $dados = json_decode(file_get_contents('php://input'), true);
-    
-    // Validações
-    if (empty($dados['nome'])) {
-        erroValidacao('Nome é obrigatório');
+    $pdo = db();
+
+    $st = $pdo->prepare("SELECT id FROM fornecedores WHERE cnpj = ? LIMIT 1");
+    $st->execute([$cnpj]);
+    if ($st->fetchColumn()) {
+        json(['sucesso' => false, 'error' => 'CNPJ já cadastrado'], 409);
     }
-    
-    if (empty($dados['cnpj'])) {
-        erroValidacao('CNPJ é obrigatório');
-    }
-    
-    // Verificar CNPJ duplicado
-    $stmt = $pdo->prepare("SELECT id FROM fornecedores WHERE cnpj = ?");
-    $stmt->execute([$dados['cnpj']]);
-    if ($stmt->fetch()) {
-        erroValidacao('CNPJ já cadastrado');
-    }
-    
-    // Inserir fornecedor
-    $sql = "INSERT INTO fornecedores (nome, cnpj, email, telefone)
-            VALUES (?, ?, ?, ?)";
-    
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([
-        $dados['nome'],
-        $dados['cnpj'],
-        $dados['email'] ?? null,
-        $dados['telefone'] ?? null
+
+    $ins = $pdo->prepare("
+        INSERT INTO fornecedores (nome, cnpj, email, telefone)
+        VALUES (?, ?, ?, ?)
+    ");
+    $ins->execute([
+        $nome,
+        $cnpj,
+        $email !== '' ? $email : null,
+        $telefone !== '' ? $telefone : null,
     ]);
-    
-    $id = $pdo->lastInsertId();
-    
-    responder([
+
+    $id = (int)$pdo->lastInsertId();
+
+    json([
         'sucesso' => true,
         'mensagem' => 'Fornecedor criado com sucesso',
-        'id' => $id
+        'id' => $id,
     ], 201);
-    
-} catch (Exception $e) {
-    erroServidor('Erro ao criar fornecedor: ' . $e->getMessage());
+
+} catch (PDOException $e) {
+    json(['sucesso' => false, 'error' => 'Erro ao criar fornecedor'], 500);
 }
-?>

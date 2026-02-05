@@ -21,6 +21,7 @@ $routes = [
     // Fornecedores
     'GET /api/fornecedores' => __DIR__ . '/../routes/fornecedores/list.php',
     'POST /api/fornecedores' => __DIR__ . '/../routes/fornecedores/create.php',
+    'POST /api/fornecedores/create' => __DIR__ . '/../routes/fornecedores/create.php',
 
     // Setores
     'GET /api/setores'  => __DIR__ . '/../routes/setores/list.php',
