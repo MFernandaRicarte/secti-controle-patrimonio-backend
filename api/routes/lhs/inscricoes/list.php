@@ -1,12 +1,24 @@
 <?php
+/**
+ * GET /api/lhs/inscricoes
+ * Lista todas as inscrições com filtro opcional por status.
+ * Endpoint administrativo.
+ */
+
 require __DIR__ . '/../../../lib/db.php';
 require __DIR__ . '/../../../lib/http.php';
 require __DIR__ . '/../../../lib/auth.php';
 
 cors();
 
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     json(['error' => 'Método não permitido. Use GET.'], 405);
+    exit;
 }
 
 $user = requireAdminOrSuperAdmin();
@@ -32,7 +44,7 @@ $sql = "
     SELECT
         i.*,
         c.nome AS curso_nome,
-        t.nome AS turma_preferencia_nome,
+        t.nome AS turma_nome,
         u.nome AS aprovado_por_nome,
         a.nome AS aluno_nome
     FROM lhs_inscricoes i
@@ -54,11 +66,11 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $inscricoes = array_map(function ($row) {
     return [
         'id' => (int) $row['id'],
-        'numero_protocolo' => $row['numero_protocolo'],
+        'numero_protocolo' => $row['numero_protocolo'] ?? null,
         'curso_id' => (int) $row['curso_id'],
         'curso_nome' => $row['curso_nome'],
         'turma_preferencia_id' => $row['turma_preferencia_id'] ? (int) $row['turma_preferencia_id'] : null,
-        'turma_preferencia_nome' => $row['turma_preferencia_nome'],
+        'turma_nome' => $row['turma_nome'],
         'nome' => $row['nome'],
         'cpf' => $row['cpf'],
         'telefone' => $row['telefone'],

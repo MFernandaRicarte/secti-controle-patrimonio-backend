@@ -1,128 +1,167 @@
 <?php
+/**
+ * PUT /api/lhs/inscricoes/{id}/aprovar
+ * Aprova uma inscrição, cria/reutiliza aluno e matricula na turma.
+ * Endpoint administrativo.
+ */
+
 require __DIR__ . '/../../../lib/db.php';
 require __DIR__ . '/../../../lib/http.php';
 require __DIR__ . '/../../../lib/auth.php';
 
 cors();
 
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'PUT' && $_SERVER['REQUEST_METHOD'] !== 'POST') {
     json(['error' => 'Método não permitido. Use PUT ou POST.'], 405);
+    exit;
 }
 
 $user = requireAdminOrSuperAdmin();
 $pdo = db();
 
-$id = $GLOBALS['routeParams']['id'] ?? 0;
-if (!$id) {
-    json(['error' => 'ID da inscrição não informado.'], 400);
-}
+$inscricaoId = $GLOBALS['routeParams']['id'] ?? 0;
 
-$stmt = $pdo->prepare("SELECT * FROM lhs_inscricoes WHERE id = ?");
-$stmt->execute([$id]);
-$inscricao = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$inscricao) {
-    json(['error' => 'Inscrição não encontrada.'], 404);
-}
-
-if ($inscricao['status'] !== 'pendente') {
-    json(['error' => 'Apenas inscrições pendentes podem ser aprovadas.'], 422);
+if ($inscricaoId <= 0) {
+    json(['error' => 'ID da inscrição inválido.'], 400);
+    exit;
 }
 
 $input = json_decode(file_get_contents('php://input'), true) ?? [];
 $turmaId = isset($input['turma_id']) ? (int) $input['turma_id'] : 0;
 
 if ($turmaId <= 0) {
-    json(['error' => 'turma_id é obrigatório para aprovação.'], 422);
+    json(['error' => 'turma_id é obrigatório para aprovar a inscrição.'], 422);
+    exit;
 }
 
-$stmtTurma = $pdo->prepare("
-    SELECT t.*, c.nome AS curso_nome 
-    FROM lhs_turmas t
-    LEFT JOIN lhs_cursos c ON c.id = t.curso_id
-    WHERE t.id = ? AND t.curso_id = ?
-");
-$stmtTurma->execute([$turmaId, $inscricao['curso_id']]);
-$turma = $stmtTurma->fetch(PDO::FETCH_ASSOC);
+// Buscar inscrição
+$stmt = $pdo->prepare("SELECT * FROM lhs_inscricoes WHERE id = :id");
+$stmt->execute([':id' => $inscricaoId]);
+$inscricao = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$inscricao) {
+    json(['error' => 'Inscrição não encontrada.'], 404);
+    exit;
+}
+
+if ($inscricao['status'] !== 'pendente') {
+    json(['error' => 'Esta inscrição já foi processada.'], 409);
+    exit;
+}
+
+// Verificar se turma existe e pertence ao mesmo curso
+$stmt = $pdo->prepare("SELECT * FROM lhs_turmas WHERE id = :id");
+$stmt->execute([':id' => $turmaId]);
+$turma = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$turma) {
-    json(['error' => 'Turma não encontrada ou não pertence a este curso.'], 404);
+    json(['error' => 'Turma não encontrada.'], 404);
+    exit;
 }
 
-if ($turma['status'] !== 'aberta' && $turma['status'] !== 'em_andamento') {
-    json(['error' => 'Esta turma não está aberta para matrículas.'], 422);
+if ((int) $turma['curso_id'] !== (int) $inscricao['curso_id']) {
+    json(['error' => 'A turma selecionada não pertence ao curso da inscrição.'], 422);
+    exit;
 }
-
-$pdo->beginTransaction();
 
 try {
-    $stmtAluno = $pdo->prepare("SELECT id FROM lhs_alunos WHERE cpf = ?");
-    $stmtAluno->execute([$inscricao['cpf']]);
-    $alunoExistente = $stmtAluno->fetch();
-    
+    $pdo->beginTransaction();
+
+    // Verificar se já existe aluno com mesmo CPF
+    $stmt = $pdo->prepare("SELECT id FROM lhs_alunos WHERE cpf = :cpf");
+    $stmt->execute([':cpf' => $inscricao['cpf']]);
+    $alunoExistente = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $alunoId = null;
+
     if ($alunoExistente) {
+        // Reutilizar aluno existente
         $alunoId = (int) $alunoExistente['id'];
-        
-        $stmtUpdate = $pdo->prepare("
-            UPDATE lhs_alunos 
-            SET nome = ?, telefone = ?, email = ?, endereco = ?, ativo = 1
-            WHERE id = ?
-        ");
-        $stmtUpdate->execute([
-            $inscricao['nome'],
-            $inscricao['telefone'],
-            $inscricao['email'],
-            $inscricao['endereco'],
-            $alunoId
-        ]);
     } else {
-        $stmtInsertAluno = $pdo->prepare("
+        // Criar novo aluno
+        $stmt = $pdo->prepare("
             INSERT INTO lhs_alunos (nome, cpf, telefone, email, endereco, ativo)
-            VALUES (?, ?, ?, ?, ?, 1)
+            VALUES (:nome, :cpf, :telefone, :email, :endereco, 1)
         ");
-        $stmtInsertAluno->execute([
-            $inscricao['nome'],
-            $inscricao['cpf'],
-            $inscricao['telefone'],
-            $inscricao['email'],
-            $inscricao['endereco']
+        $stmt->execute([
+            ':nome' => $inscricao['nome'],
+            ':cpf' => $inscricao['cpf'],
+            ':telefone' => $inscricao['telefone'],
+            ':email' => $inscricao['email'],
+            ':endereco' => $inscricao['endereco'],
         ]);
         $alunoId = (int) $pdo->lastInsertId();
     }
-    
-    $stmtCheckMatricula = $pdo->prepare("
-        SELECT id FROM lhs_turma_alunos WHERE turma_id = ? AND aluno_id = ?
+
+    // Verificar se aluno já está matriculado nesta turma
+    $stmt = $pdo->prepare("
+        SELECT id FROM lhs_turma_alunos 
+        WHERE turma_id = :turma_id AND aluno_id = :aluno_id
     ");
-    $stmtCheckMatricula->execute([$turmaId, $alunoId]);
-    
-    if (!$stmtCheckMatricula->fetch()) {
-        $stmtMatricula = $pdo->prepare("
+    $stmt->execute([':turma_id' => $turmaId, ':aluno_id' => $alunoId]);
+
+    if (!$stmt->fetch()) {
+        // Matricular aluno na turma
+        $stmt = $pdo->prepare("
             INSERT INTO lhs_turma_alunos (turma_id, aluno_id, status)
-            VALUES (?, ?, 'matriculado')
+            VALUES (:turma_id, :aluno_id, 'matriculado')
         ");
-        $stmtMatricula->execute([$turmaId, $alunoId]);
+        $stmt->execute([':turma_id' => $turmaId, ':aluno_id' => $alunoId]);
     }
-    
-    $stmtApprove = $pdo->prepare("
+
+    // Atualizar inscrição
+    $stmt = $pdo->prepare("
         UPDATE lhs_inscricoes 
-        SET status = 'aprovado', 
-            aprovado_por = ?, 
-            aluno_id = ?,
-            turma_preferencia_id = ?
-        WHERE id = ?
+        SET status = 'aprovado', aluno_id = :aluno_id, turma_preferencia_id = :turma_preferencia_id, aprovado_por = :aprovado_por
+        WHERE id = :id
     ");
-    $stmtApprove->execute([$user['id'], $alunoId, $turmaId, $id]);
-    
-    $pdo->commit();
-    
-    json([
-        'ok' => true,
-        'message' => 'Inscrição aprovada e aluno matriculado com sucesso.',
-        'aluno_id' => $alunoId,
-        'turma_id' => $turmaId,
+    $stmt->execute([
+        ':aluno_id' => $alunoId,
+        ':turma_preferencia_id' => $turmaId,
+        ':aprovado_por' => $user['id'],
+        ':id' => $inscricaoId,
     ]);
-    
+
+    $pdo->commit();
+
+    // Buscar inscrição atualizada com joins
+    $stmt = $pdo->prepare("
+        SELECT 
+            i.*,
+            c.nome AS curso_nome,
+            t.nome AS turma_nome,
+            a.nome AS aluno_nome
+        FROM lhs_inscricoes i
+        LEFT JOIN lhs_cursos c ON c.id = i.curso_id
+        LEFT JOIN lhs_turmas t ON t.id = i.turma_preferencia_id
+        LEFT JOIN lhs_alunos a ON a.id = i.aluno_id
+        WHERE i.id = :id
+    ");
+    $stmt->execute([':id' => $inscricaoId]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $resultado = [
+        'id' => (int) $row['id'],
+        'curso_id' => (int) $row['curso_id'],
+        'curso_nome' => $row['curso_nome'],
+        'nome' => $row['nome'],
+        'cpf' => $row['cpf'],
+        'status' => $row['status'],
+        'aluno_id' => (int) $row['aluno_id'],
+        'aluno_nome' => $row['aluno_nome'],
+        'turma_preferencia_id' => (int) $row['turma_preferencia_id'],
+        'turma_nome' => $row['turma_nome'],
+        'mensagem' => 'Inscrição aprovada! Aluno matriculado com sucesso.',
+    ];
+
+    json($resultado);
 } catch (PDOException $e) {
     $pdo->rollBack();
-    json(['error' => 'Erro ao aprovar inscrição.'], 500);
+    json(['error' => 'Erro ao aprovar inscrição.', 'detalhes' => $e->getMessage()], 500);
+    exit;
 }

@@ -1,18 +1,35 @@
 <?php
-require __DIR__ . '/../../../lib/db.php';
+/**
+ * POST /api/lhs/inscricoes
+ * Submete interesse em um curso (pré-matrícula pública).
+ * Endpoint público - não requer autenticação.
+ */
+
 require __DIR__ . '/../../../lib/http.php';
+require __DIR__ . '/../../../config/config.php';
 
 cors();
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    json(['error' => 'Método não permitido. Use POST.'], 405);
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
 }
 
-$pdo = db();
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    json(['error' => 'Método não permitido. Use POST.'], 405);
+    exit;
+}
+
+try {
+    $pdo = db();
+} catch (PDOException $e) {
+    json(['error' => 'Erro ao conectar ao banco.'], 500);
+    exit;
+}
+
 $input = json_decode(file_get_contents('php://input'), true) ?? [];
 
 $cursoId = isset($input['curso_id']) ? (int) $input['curso_id'] : 0;
-$turmaPreferenciaId = isset($input['turma_preferencia_id']) ? (int) $input['turma_preferencia_id'] : null;
 $nome = trim($input['nome'] ?? '');
 $cpf = trim($input['cpf'] ?? '');
 $telefone = trim($input['telefone'] ?? '');
@@ -21,98 +38,96 @@ $endereco = trim($input['endereco'] ?? '');
 
 $erros = [];
 
-if ($cursoId <= 0) {
-    $erros[] = 'curso_id é obrigatório.';
-}
-
 if ($nome === '') {
-    $erros[] = 'nome é obrigatório.';
+    $erros[] = 'Nome é obrigatório.';
 }
 
 if ($cpf === '') {
-    $erros[] = 'cpf é obrigatório.';
+    $erros[] = 'CPF é obrigatório.';
+}
+
+if ($cursoId <= 0) {
+    $erros[] = 'Curso é obrigatório.';
 }
 
 if ($erros) {
     json(['error' => 'Dados inválidos.', 'detalhes' => $erros], 422);
+    exit;
 }
 
-$stmt = $pdo->prepare("SELECT id, ativo FROM lhs_cursos WHERE id = ?");
-$stmt->execute([$cursoId]);
-$curso = $stmt->fetch();
+// Verificar se curso existe e está ativo
+try {
+    $stmt = $pdo->prepare("SELECT id, nome FROM lhs_cursos WHERE id = :id AND ativo = 1");
+    $stmt->execute([':id' => $cursoId]);
+    $curso = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$curso) {
-    json(['error' => 'Curso não encontrado.'], 404);
-}
-
-if (!$curso['ativo']) {
-    json(['error' => 'Este curso não está ativo para inscrições.'], 422);
-}
-
-if ($turmaPreferenciaId) {
-    $stmtTurma = $pdo->prepare("SELECT id FROM lhs_turmas WHERE id = ? AND curso_id = ? AND status = 'aberta'");
-    $stmtTurma->execute([$turmaPreferenciaId, $cursoId]);
-    if (!$stmtTurma->fetch()) {
-        $turmaPreferenciaId = null;
+    if (!$curso) {
+        json(['error' => 'Curso não encontrado ou não está disponível.'], 404);
+        exit;
     }
+} catch (PDOException $e) {
+    json(['error' => 'Erro ao verificar curso.'], 500);
+    exit;
 }
 
-$stmtCheck = $pdo->prepare("
-    SELECT id, status, numero_protocolo 
-    FROM lhs_inscricoes 
-    WHERE cpf = ? AND curso_id = ? AND status IN ('pendente', 'aprovado')
-");
-$stmtCheck->execute([$cpf, $cursoId]);
-$inscricaoExistente = $stmtCheck->fetch();
+// Verificar se já existe inscrição pendente para mesmo CPF + curso
+try {
+    $stmt = $pdo->prepare("
+        SELECT id FROM lhs_inscricoes 
+        WHERE cpf = :cpf AND curso_id = :curso_id AND status = 'pendente'
+    ");
+    $stmt->execute([':cpf' => $cpf, ':curso_id' => $cursoId]);
 
-if ($inscricaoExistente) {
-    if ($inscricaoExistente['status'] === 'pendente') {
-        json([
-            'error' => 'Já existe uma inscrição pendente para este CPF neste curso.',
-            'numero_protocolo' => $inscricaoExistente['numero_protocolo']
-        ], 409);
-    } else {
-        json(['error' => 'Este CPF já possui matrícula aprovada neste curso.'], 409);
+    if ($stmt->fetch()) {
+        json(['error' => 'Já existe uma inscrição pendente para este CPF neste curso.'], 409);
+        exit;
     }
+} catch (PDOException $e) {
+    json(['error' => 'Erro ao verificar inscrições existentes.'], 500);
+    exit;
 }
 
-$dataAtual = date('Ymd');
-$random = str_pad(mt_rand(0, 99999), 5, '0', STR_PAD_LEFT);
-$numeroProtocolo = "LHS-{$dataAtual}-{$random}";
+// Gerar número de protocolo: LHS-YYYYMMDD-XXXXX
+$dataProtocolo = date('Ymd');
+$randomPart = str_pad(random_int(0, 99999), 5, '0', STR_PAD_LEFT);
+$numeroProtocolo = "LHS-{$dataProtocolo}-{$randomPart}";
 
-$stmtProtocolo = $pdo->prepare("SELECT id FROM lhs_inscricoes WHERE numero_protocolo = ?");
-$stmtProtocolo->execute([$numeroProtocolo]);
-while ($stmtProtocolo->fetch()) {
-    $random = str_pad(mt_rand(0, 99999), 5, '0', STR_PAD_LEFT);
-    $numeroProtocolo = "LHS-{$dataAtual}-{$random}";
-    $stmtProtocolo->execute([$numeroProtocolo]);
-}
+// Criar inscrição
+try {
+    $sqlInsert = "
+        INSERT INTO lhs_inscricoes (numero_protocolo, curso_id, nome, cpf, telefone, email, endereco, status)
+        VALUES (:numero_protocolo, :curso_id, :nome, :cpf, :telefone, :email, :endereco, 'pendente')
+    ";
 
-$stmtInsert = $pdo->prepare("
-    INSERT INTO lhs_inscricoes 
-    (numero_protocolo, curso_id, turma_preferencia_id, nome, cpf, telefone, email, endereco, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pendente')
-");
-$stmtInsert->execute([
-    $numeroProtocolo,
-    $cursoId,
-    $turmaPreferenciaId ?: null,
-    $nome,
-    $cpf,
-    $telefone ?: null,
-    $email ?: null,
-    $endereco ?: null
-]);
+    $stmt = $pdo->prepare($sqlInsert);
+    $stmt->execute([
+        ':numero_protocolo' => $numeroProtocolo,
+        ':curso_id' => $cursoId,
+        ':nome' => $nome,
+        ':cpf' => $cpf,
+        ':telefone' => $telefone ?: null,
+        ':email' => $email ?: null,
+        ':endereco' => $endereco ?: null,
+    ]);
 
-$id = (int) $pdo->lastInsertId();
+    $novoId = (int) $pdo->lastInsertId();
 
-json([
-    'ok' => true,
-    'message' => 'Inscrição realizada com sucesso.',
-    'numero_protocolo' => $numeroProtocolo,
-    'inscricao' => [
-        'id' => $id,
+    $inscricao = [
+        'id' => $novoId,
         'numero_protocolo' => $numeroProtocolo,
+        'curso_id' => $cursoId,
+        'curso_nome' => $curso['nome'],
+        'nome' => $nome,
+        'cpf' => $cpf,
+        'telefone' => $telefone ?: null,
+        'email' => $email ?: null,
+        'endereco' => $endereco ?: null,
         'status' => 'pendente',
-    ],
-], 201);
+        'mensagem' => 'Sua inscrição foi recebida com sucesso! Aguarde a análise da equipe.',
+    ];
+
+    json($inscricao, 201);
+} catch (PDOException $e) {
+    json(['error' => 'Erro ao salvar inscrição.', 'detalhes' => $e->getMessage()], 500);
+    exit;
+}
