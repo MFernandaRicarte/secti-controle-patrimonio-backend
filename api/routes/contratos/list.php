@@ -9,22 +9,17 @@ require __DIR__ . '/../../lib/auth.php';
 cors();
 
 $usuario = requireAuth();
-header('Content-Type: application/json; charset=utf-8');
 
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method !== 'GET') {
-    http_response_code(405);
-    json(['error' => 'Método não permitido. Use GET.']);
-    exit;
+    json(['sucesso' => false, 'error' => 'Método não permitido. Use GET.'], 405);
 }
 
 try {
     $pdo = db();
 } catch (PDOException $e) {
-    http_response_code(500);
-    json(['error' => 'Erro ao conectar ao banco de dados.']);
-    exit;
+    json(['sucesso' => false, 'error' => 'Erro ao conectar ao banco de dados.'], 500);
 }
 
 $q = isset($_GET['q']) ? trim($_GET['q']) : '';
@@ -81,8 +76,7 @@ try {
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     if (empty($rows)) {
-        json(['sucesso' => false, 'message' => 'Não há contratos cadastrados.', 'dados' => [], 'total' => 0]);
-        exit;
+        json(['sucesso' => true, 'dados' => [], 'total' => 0]);
     }
 
     $contratos = array_map(function ($row) {
@@ -91,14 +85,14 @@ try {
             'numero' => $row['numero'],
             'ano_contrato' => (int) $row['ano_contrato'],
             'licitacao_id' => $row['licitacao_id'] ? (int) $row['licitacao_id'] : null,
-            'fornecedor_id' => (int) $row['fornecedor_id'],
+            'fornecedor_id' => $row['fornecedor_id'] ? (int) $row['fornecedor_id'] : null,
             'fornecedor_nome' => $row['fornecedor_nome'],
             'objeto' => $row['objeto'],
             'data_inicio' => $row['data_inicio'],
             'data_fim' => $row['data_fim'],
-            'valor_contratado' => (float) $row['valor_contratado'],
-            'valor_executado' => (float) $row['valor_executado'],
-            'valor_saldo' => (float) $row['valor_saldo'],
+            'valor_contratado' => $row['valor_contratado'] !== null ? (float) $row['valor_contratado'] : 0.0,
+            'valor_executado' => $row['valor_executado'] !== null ? (float) $row['valor_executado'] : 0.0,
+            'valor_saldo' => $row['valor_saldo'] !== null ? (float) $row['valor_saldo'] : 0.0,
             'status' => $row['status'],
             'criado_em' => $row['criado_em'],
             'atualizado_em' => $row['atualizado_em'],
@@ -107,6 +101,5 @@ try {
 
     json(['sucesso' => true, 'dados' => $contratos, 'total' => count($contratos)]);
 } catch (PDOException $e) {
-    http_response_code(500);
-    json(['error' => 'Erro ao buscar contratos.']);
+    json(['sucesso' => false, 'error' => 'Erro ao buscar contratos.'], 500);
 }

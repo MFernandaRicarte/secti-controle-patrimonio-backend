@@ -1,38 +1,27 @@
 <?php
 require_once __DIR__ . '/http.php';
 require_once __DIR__ . '/db.php';
-require_once __DIR__ . '/jwt.php';
 
-function getBearerToken(): ?string {
-    if (function_exists('getallheaders')) {
-        $headers = getallheaders();
-        if (isset($headers['Authorization'])) {
-            if (preg_match('/Bearer\s+(.*)$/i', $headers['Authorization'], $m)) {
-                return trim($m[1]);
-            }
-        }
-    }
+/**
+ * Autenticação simples via header X-User-Id (padrão do projeto).
+ * O frontend salva secti_user no localStorage e envia X-User-Id nas requisições.
+ */
 
-    if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-        if (preg_match('/Bearer\s+(.*)$/i', $_SERVER['HTTP_AUTHORIZATION'], $m)) {
-            return trim($m[1]);
-        }
-    }
+function getAuthUserId(): ?int {
+    $raw = $_SERVER['HTTP_X_USER_ID'] ?? '';
+    if (!is_string($raw)) return null;
 
-    return null;
+    $raw = trim($raw);
+    if ($raw === '' || !ctype_digit($raw)) return null;
+
+    return (int)$raw;
 }
 
 function authUser(): array {
-    $token = getBearerToken();
+    $uid = getAuthUserId();
 
-    if (!$token) {
-        json(['error' => 'Token não informado'], 401);
-    }
-
-    $payload = jwt_verify($token);
-
-    if (!$payload) {
-        json(['error' => 'Token inválido ou expirado'], 401);
+    if (!$uid) {
+        json(['error' => 'Não autenticado.'], 401);
     }
 
     $pdo = db();
@@ -45,7 +34,7 @@ function authUser(): array {
         WHERE u.id = ?
         LIMIT 1
     ");
-    $st->execute([$payload['uid']]);
+    $st->execute([$uid]);
     $u = $st->fetch();
 
     if (!$u) {
