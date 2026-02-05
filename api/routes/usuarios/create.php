@@ -1,24 +1,39 @@
 <?php
-require __DIR__.'/../../lib/http.php';
-require __DIR__.'/../../config/config.php';
+require __DIR__ . '/../../lib/http.php';
+require __DIR__ . '/../../config/config.php';
+require __DIR__ . '/../../lib/auth.php';
 
 cors();
+requireSuperAdmin();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     json(['error' => 'Método não permitido'], 405);
 }
 
 $data = json_decode(file_get_contents('php://input'), true);
-if (!$data) json(['error' => 'JSON inválido'], 400);
+if (!$data) {
+    json(['error' => 'JSON inválido'], 400);
+}
 
 $matricula = trim($data['matricula'] ?? '');
 $email     = trim($data['email'] ?? '');
 $nome      = trim($data['nome'] ?? '');
-$senha     = trim($data['senha'] ?? '');
+$senha     = (string)($data['senha'] ?? '');
 $perfil_id = isset($data['perfil_id']) ? (int)$data['perfil_id'] : null;
+$data_nascimento = $data['data_nascimento'] ?? null;
+$celular         = trim((string)($data['celular'] ?? ''));
+$cep         = trim((string)($data['cep'] ?? ''));
+$cidade      = trim((string)($data['cidade'] ?? ''));
+$bairro      = trim((string)($data['bairro'] ?? ''));
+$numero      = trim((string)($data['numero'] ?? ''));
+$complemento = trim((string)($data['complemento'] ?? ''));
 
 if ($matricula === '' || $email === '' || $nome === '' || $senha === '') {
-    json(['error' => 'Campos obrigatórios: matricula, email, nome, senha'], 400);
+    json(['error' => 'Campos obrigatórios: matrícula, nome, e-mail e senha'], 400);
+}
+
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    json(['error' => 'E-mail inválido'], 422);
 }
 
 try {
@@ -30,19 +45,50 @@ try {
         json(['error' => 'Matrícula ou e-mail já cadastrado'], 409);
     }
 
-    if ($perfil_id !== null) {
-        $p = $pdo->prepare("SELECT id FROM perfis WHERE id = ?");
-        $p->execute([$perfil_id]);
-        if (!$p->fetch()) json(['error' => 'perfil_id inválido'], 422);
+    $p = $pdo->prepare("SELECT id FROM perfis WHERE id = ?");
+    $p->execute([$perfil_id]);
+    if (!$p->fetch()) {
+        json(['error' => 'Perfil inválido'], 422);
     }
 
-    $sql = "INSERT INTO usuarios (matricula, email, nome, senha_hash, perfil_id, criado_em)
-            VALUES (?, ?, ?, ?, ?, NOW())";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$matricula, $email, $nome, password_hash($senha, PASSWORD_BCRYPT), $perfil_id]);
+    $sql = "
+        INSERT INTO usuarios (
+            matricula,
+            email,
+            senha_hash,
+            nome,
+            data_nascimento,
+            celular,
+            cep,
+            cidade,
+            bairro,
+            numero,
+            complemento,
+            perfil_id,
+            criado_em
+        ) VALUES (
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW()
+        )
+    ";
 
-    $id = (int)$pdo->lastInsertId();
-    json(['id' => $id, 'matricula' => $matricula, 'email' => $email, 'nome' => $nome, 'perfil_id' => $perfil_id], 201);
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        $matricula,
+        $email,
+        password_hash($senha, PASSWORD_BCRYPT),
+        $nome,
+        $data_nascimento ?: null,
+        $celular ?: null,
+        $cep ?: null,
+        $cidade ?: null,
+        $bairro ?: null,
+        $numero ?: null,
+        $complemento ?: null,
+        $perfil_id,
+    ]);
+
+    json(['success' => true], 201);
+
 } catch (Throwable $e) {
     json(['error' => $e->getMessage()], 500);
 }

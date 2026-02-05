@@ -8,13 +8,14 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 $routes = [
     // Healthcheck
-    'GET /api/ping' => __DIR__ . '/../routes/ping.php',
+    'GET /api/ping'    => __DIR__ . '/../routes/ping.php',
+    'GET /api/ping_db' => __DIR__ . '/../routes/ping_db.php',
 
     // Auth
     'POST /api/login' => __DIR__ . '/../routes/auth/login.php',
 
     // Usuários
-    'GET /api/usuarios' => __DIR__ . '/../routes/usuarios/list.php',
+    'GET /api/usuarios'  => __DIR__ . '/../routes/usuarios/list.php',
     'POST /api/usuarios' => __DIR__ . '/../routes/usuarios/create.php',
 
     // Fornecedores
@@ -22,33 +23,33 @@ $routes = [
     'POST /api/fornecedores' => __DIR__ . '/../routes/fornecedores/create.php',
 
     // Setores
-    'GET /api/setores' => __DIR__ . '/../routes/setores/list.php',
+    'GET /api/setores'  => __DIR__ . '/../routes/setores/list.php',
     'POST /api/setores' => __DIR__ . '/../routes/setores/create.php',
 
     // Salas
-    'GET /api/salas' => __DIR__ . '/../routes/salas/list.php',
+    'GET /api/salas'  => __DIR__ . '/../routes/salas/list.php',
     'POST /api/salas' => __DIR__ . '/../routes/salas/create.php',
 
     // Bens
-    'GET /api/bens' => __DIR__ . '/../routes/bens/list.php',
-    'POST /api/bens' => __DIR__ . '/../routes/bens/create.php',
-    'POST /api/bens/upload' => __DIR__ . '/../routes/bens/upload.php',
+    'GET /api/bens'          => __DIR__ . '/../routes/bens/list.php',
+    'POST /api/bens'         => __DIR__ . '/../routes/bens/create.php',
+    'POST /api/bens/upload'  => __DIR__ . '/../routes/bens/upload.php',
     'GET /api/bens-detalhes' => __DIR__ . '/../routes/bens/details.php',
-    'GET /api/bens-excluidos' => __DIR__ . '/../routes/bens/excluidos.php',
+    'GET /api/bens-excluidos'=> __DIR__ . '/../routes/bens/excluidos.php',
 
     // Materiais de consumo
-    'GET /api/materiais' => __DIR__ . '/../routes/materiais/list.php',
+    'GET /api/materiais'  => __DIR__ . '/../routes/materiais/list.php',
     'POST /api/materiais' => __DIR__ . '/../routes/materiais/create.php',
 
     // Tipos básicos
-    'GET /api/tipos-materiais' => __DIR__ . '/../routes/tipos/materiais/list.php',
+    'GET /api/tipos-materiais'  => __DIR__ . '/../routes/tipos/materiais/list.php',
     'POST /api/tipos-materiais' => __DIR__ . '/../routes/tipos/materiais/create.php',
 
-    'GET /api/tipos-eletronicos' => __DIR__ . '/../routes/tipos/eletronicos/list.php',
+    'GET /api/tipos-eletronicos'  => __DIR__ . '/../routes/tipos/eletronicos/list.php',
     'POST /api/tipos-eletronicos' => __DIR__ . '/../routes/tipos/eletronicos/create.php',
 
     // Transferências
-    'GET /api/transferencias' => __DIR__ . '/../routes/transferencias/list.php',
+    'GET /api/transferencias'  => __DIR__ . '/../routes/transferencias/list.php',
     'POST /api/transferencias' => __DIR__ . '/../routes/transferencias/create.php',
 
     // Fases (tramitações)
@@ -62,7 +63,7 @@ $routes = [
     'POST /api/bens/tramitacoes' => __DIR__ . '/../routes/bens/tramitacoes_create.php',
 
     // Licitações
-    'GET /api/licitacoes' => __DIR__ . '/../routes/licitacoes/list.php',
+    'GET /api/licitacoes'           => __DIR__ . '/../routes/licitacoes/list.php',
     'POST /api/licitacoes/cadastro' => __DIR__ . '/../routes/licitacoes/create.php',
     'GET /api/licitacoes/tramitacoes' => __DIR__ . '/../routes/licitacoes/tramitacoes_list.php',
     'POST /api/licitacoes/tramitacoes' => __DIR__ . '/../routes/licitacoes/tramitacoes_create.php',
@@ -81,16 +82,22 @@ $routes = [
     'GET /api/dispensas' => __DIR__ . '/../routes/dispensas/list.php',
     'POST /api/dispensas' => __DIR__ . '/../routes/dispensas/create.php',
 
+    // Notificações
+    'GET /api/notificacoes'                      => __DIR__ . '/../routes/notificacoes/list.php',
+    'POST /api/notificacoes'                     => __DIR__ . '/../routes/notificacoes/create.php',
+    'POST /api/notificacoes/marcar-lida'         => __DIR__ . '/../routes/notificacoes/marcar_lida.php',
+    'POST /api/notificacoes/solicitacao-material'=> __DIR__ . '/../routes/notificacoes/solicitacao_material.php',
+
     // LHS - Cursos
-    'GET /api/lhs/cursos' => __DIR__ . '/../routes/lhs/cursos/list.php',
+    'GET /api/lhs/cursos'  => __DIR__ . '/../routes/lhs/cursos/list.php',
     'POST /api/lhs/cursos' => __DIR__ . '/../routes/lhs/cursos/create.php',
 
     // LHS - Alunos
-    'GET /api/lhs/alunos' => __DIR__ . '/../routes/lhs/alunos/list.php',
+    'GET /api/lhs/alunos'  => __DIR__ . '/../routes/lhs/alunos/list.php',
     'POST /api/lhs/alunos' => __DIR__ . '/../routes/lhs/alunos/create.php',
 
     // LHS - Turmas
-    'GET /api/lhs/turmas' => __DIR__ . '/../routes/lhs/turmas/list.php',
+    'GET /api/lhs/turmas'  => __DIR__ . '/../routes/lhs/turmas/list.php',
     'POST /api/lhs/turmas' => __DIR__ . '/../routes/lhs/turmas/create.php',
 ];
 
