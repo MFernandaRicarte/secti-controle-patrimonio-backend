@@ -2,33 +2,26 @@
 
 require __DIR__ . '/../../../lib/http.php';
 require __DIR__ . '/../../../config/config.php';
+require __DIR__ . '/../../../lib/auth.php';
 
 cors();
 
-header('Content-Type: application/json; charset=utf-8');
-
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    http_response_code(405);
-    echo json_encode(['error' => 'Método não permitido. Use GET.']);
-    exit;
+    json(['error' => 'Método não permitido. Use GET.'], 405);
 }
+
+$user = requireProfessorOrAdmin();
+$pdo = db();
 
 $id = $GLOBALS['routeParams']['id'] ?? 0;
 if (!$id) {
-    http_response_code(400);
-    echo json_encode(['error' => 'ID da turma não informado.']);
-    exit;
+    json(['error' => 'ID da turma não informado.'], 400);
 }
 
-try {
-    $pdo = db();
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao conectar ao banco.']);
-    exit;
+if (!professorPodeTurma($user, $id)) {
+    json(['error' => 'Acesso negado a esta turma.'], 403);
 }
 
-// Buscar turma com curso e professor
 $sql = "
     SELECT t.*, c.nome AS curso_nome, u.nome AS professor_nome
     FROM lhs_turmas t
@@ -41,12 +34,9 @@ $stmt->execute([':id' => $id]);
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$row) {
-    http_response_code(404);
-    echo json_encode(['error' => 'Turma não encontrada.']);
-    exit;
+    json(['error' => 'Turma não encontrada.'], 404);
 }
 
-// Buscar alunos matriculados
 $sqlAlunos = "
     SELECT a.id, a.nome, a.cpf, a.email, a.telefone, ta.status, ta.data_matricula
     FROM lhs_turma_alunos ta
@@ -87,4 +77,4 @@ $turma = [
     'total_alunos' => count($alunosFormatados),
 ];
 
-echo json_encode($turma);
+json($turma);
