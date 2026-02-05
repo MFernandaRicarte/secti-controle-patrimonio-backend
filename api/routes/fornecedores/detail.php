@@ -9,8 +9,20 @@ cors();
 $usuario = requireAuth();
 
 try {
-    // Extrair o ID dos route params definidos no router
-    $id = $GLOBALS['routeParams']['id'] ?? null;
+    // Extrair o ID da URL
+    $id = null;
+    
+    if (isset($GLOBALS['routeParams']['id'])) {
+        $id = $GLOBALS['routeParams']['id'];
+    } else {
+        $uri = $_SERVER['REQUEST_URI'];
+        $uri = strtok($uri, '?');
+        if (preg_match('/\/fornecedores\/(\d+)/', $uri, $matches)) {
+            $id = $matches[1];
+        }
+    }
+
+    $id = (int)$id;
 
     if (!$id) {
         json(['erro' => 'ID do fornecedor não fornecido'], 400);
@@ -42,16 +54,23 @@ try {
     if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         $dados = json_decode(file_get_contents('php://input'), true);
 
-        // Validações
+        if (!$dados) {
+            json(['erro' => 'Dados inválidos'], 400);
+            exit;
+        }
+
+        // Validações e limpeza
         $nome = trim($dados['nome'] ?? '');
-        $cnpj = trim($dados['cnpj'] ?? '');
-        $email = trim($dados['email'] ?? '') ?: null;
-        $telefone = trim($dados['telefone'] ?? '') ?: null;
+        $cnpj = preg_replace('/\D+/', '', (string)($dados['cnpj'] ?? ''));
+        $email = trim($dados['email'] ?? '');
+        $telefone = preg_replace('/\D+/', '', (string)($dados['telefone'] ?? ''));
 
         // Verificar se fornecedor existe
-        $stmt = $pdo->prepare("SELECT id FROM fornecedores WHERE id = ?");
+        $stmt = $pdo->prepare("SELECT id, cnpj FROM fornecedores WHERE id = ?");
         $stmt->execute([$id]);
-        if (!$stmt->fetch()) {
+        $fornecedorAtual = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$fornecedorAtual) {
             json(['erro' => 'Fornecedor não encontrado'], 404);
             exit;
         }
@@ -66,12 +85,14 @@ try {
             exit;
         }
 
-        // Verificar CNPJ duplicado (excluindo o próprio fornecedor)
-        $stmt = $pdo->prepare("SELECT id FROM fornecedores WHERE cnpj = ? AND id != ?");
-        $stmt->execute([$cnpj, $id]);
-        if ($stmt->fetch()) {
-            json(['erro' => 'CNPJ já cadastrado para outro fornecedor'], 400);
-            exit;
+        // Verificar CNPJ duplicado APENAS se o CNPJ foi alterado
+        if ($cnpj !== $fornecedorAtual['cnpj']) {
+            $stmt = $pdo->prepare("SELECT id FROM fornecedores WHERE cnpj = ?");
+            $stmt->execute([$cnpj]);
+            if ($stmt->fetch()) {
+                json(['erro' => 'CNPJ já cadastrado para outro fornecedor'], 400);
+                exit;
+            }
         }
 
         // Atualizar fornecedor
@@ -80,7 +101,13 @@ try {
                 WHERE id = ?";
         
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([$nome, $cnpj, $email, $telefone, $id]);
+        $stmt->execute([
+            $nome, 
+            $cnpj, 
+            $email !== '' ? $email : null, 
+            $telefone !== '' ? $telefone : null, 
+            $id
+        ]);
 
         // Retornar fornecedor atualizado
         $stmt = $pdo->prepare("SELECT id, nome, cnpj, email, telefone, criado_em 
@@ -98,7 +125,6 @@ try {
 
     // DELETE - Excluir fornecedor
     if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
-        // Verificar se fornecedor existe
         $stmt = $pdo->prepare("SELECT id FROM fornecedores WHERE id = ?");
         $stmt->execute([$id]);
         if (!$stmt->fetch()) {
@@ -106,7 +132,7 @@ try {
             exit;
         }
 
-        // Verificar se há contratos ou outras relacionações
+        // Verificar contratos
         $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM contratos WHERE fornecedor_id = ?");
         $stmt->execute([$id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -115,7 +141,6 @@ try {
             exit;
         }
 
-        // Excluir fornecedor
         $stmt = $pdo->prepare("DELETE FROM fornecedores WHERE id = ?");
         $stmt->execute([$id]);
 
