@@ -27,11 +27,12 @@ if ($email === '' || $senha === '') {
 try {
     $pdo = db();
 
-    // busca usuário pelo e-mail
     $stmt = $pdo->prepare("
-        SELECT id, matricula, email, nome, senha_hash, perfil_id, criado_em
-        FROM usuarios
-        WHERE email = ?
+        SELECT u.id, u.matricula, u.email, u.nome, u.senha_hash, u.perfil_id, u.criado_em,
+               p.nome AS perfil_nome
+        FROM usuarios u
+        LEFT JOIN perfis p ON p.id = u.perfil_id
+        WHERE u.email = ?
         LIMIT 1
     ");
     $stmt->execute([$email]);
@@ -41,12 +42,10 @@ try {
         json(['error' => 'Usuário ou senha inválidos'], 401);
     }
 
-    // confere a senha
     if (!password_verify($senha, $user['senha_hash'])) {
         json(['error' => 'Usuário ou senha inválidos'], 401);
     }
 
-    // tudo certo: remove o hash antes de devolver
     unset($user['senha_hash']);
 
     $token = jwt_generate([

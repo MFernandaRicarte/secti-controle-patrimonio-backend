@@ -2,30 +2,27 @@
 
 require __DIR__ . '/../../../lib/http.php';
 require __DIR__ . '/../../../config/config.php';
+require __DIR__ . '/../../../lib/auth.php';
 
 cors();
 
-header('Content-Type: application/json; charset=utf-8');
-
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    http_response_code(405);
-    echo json_encode(['error' => 'Método não permitido. Use GET.']);
-    exit;
+    json(['error' => 'Método não permitido. Use GET.'], 405);
 }
 
-try {
-    $pdo = db();
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao conectar ao banco.']);
-    exit;
-}
+$user = requireProfessorOrAdmin();
+$pdo = db();
 
 $cursoId = isset($_GET['curso_id']) ? (int) $_GET['curso_id'] : 0;
 $status = isset($_GET['status']) ? trim($_GET['status']) : '';
 
 $where = '';
 $params = [];
+
+if (isProfessor($user)) {
+    $where .= " AND t.professor_id = :professor_id";
+    $params[':professor_id'] = $user['id'];
+}
 
 if ($cursoId > 0) {
     $where .= " AND t.curso_id = :curso_id";
@@ -60,31 +57,26 @@ $sql = "
     LIMIT 200
 ";
 
-try {
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $turmas = array_map(function ($row) {
-        return [
-            'id' => (int) $row['id'],
-            'curso_id' => (int) $row['curso_id'],
-            'curso_nome' => $row['curso_nome'],
-            'professor_id' => $row['professor_id'] ? (int) $row['professor_id'] : null,
-            'professor_nome' => $row['professor_nome'],
-            'nome' => $row['nome'],
-            'horario_inicio' => $row['horario_inicio'],
-            'horario_fim' => $row['horario_fim'],
-            'data_inicio' => $row['data_inicio'],
-            'data_fim' => $row['data_fim'],
-            'status' => $row['status'],
-            'total_alunos' => (int) $row['total_alunos'],
-            'criado_em' => $row['criado_em'],
-        ];
-    }, $rows);
+$turmas = array_map(function ($row) {
+    return [
+        'id' => (int) $row['id'],
+        'curso_id' => (int) $row['curso_id'],
+        'curso_nome' => $row['curso_nome'],
+        'professor_id' => $row['professor_id'] ? (int) $row['professor_id'] : null,
+        'professor_nome' => $row['professor_nome'],
+        'nome' => $row['nome'],
+        'horario_inicio' => $row['horario_inicio'],
+        'horario_fim' => $row['horario_fim'],
+        'data_inicio' => $row['data_inicio'],
+        'data_fim' => $row['data_fim'],
+        'status' => $row['status'],
+        'total_alunos' => (int) $row['total_alunos'],
+        'criado_em' => $row['criado_em'],
+    ];
+}, $rows);
 
-    echo json_encode($turmas);
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao buscar turmas.']);
-}
+json($turmas);

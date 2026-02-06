@@ -100,6 +100,33 @@ $routes = [
     // LHS - Turmas
     'GET /api/lhs/turmas'  => __DIR__ . '/../routes/lhs/turmas/list.php',
     'POST /api/lhs/turmas' => __DIR__ . '/../routes/lhs/turmas/create.php',
+
+    // LHS - Aulas
+    'GET /api/lhs/aulas'  => __DIR__ . '/../routes/lhs/aulas/list.php',
+    'POST /api/lhs/aulas' => __DIR__ . '/../routes/lhs/aulas/create.php',
+
+    // LHS - Inscrições
+    'GET /api/lhs/inscricoes'  => __DIR__ . '/../routes/lhs/inscricoes/list.php',
+    'POST /api/lhs/inscricoes' => __DIR__ . '/../routes/lhs/inscricoes/create.php',
+    'GET /api/lhs/inscricoes/consulta' => __DIR__ . '/../routes/lhs/inscricoes/consulta.php',
+    'GET /api/lhs/inscricoes/cursos-disponiveis' => __DIR__ . '/../routes/lhs/inscricoes/cursos_disponiveis.php',
+
+    // LHS - Dashboard
+    'GET /api/lhs/dashboard/stats' => __DIR__ . '/../routes/lhs/dashboard/stats.php',
+
+    // LHS - Certificados
+    'GET /api/lhs/certificados' => __DIR__ . '/../routes/lhs/certificados/list.php',
+    'POST /api/lhs/certificados/emitir' => __DIR__ . '/../routes/lhs/certificados/emitir.php',
+    'GET /api/lhs/certificados/validar' => __DIR__ . '/../routes/lhs/certificados/validar.php',
+
+    // LHS - Notificações
+    'GET /api/lhs/notificacoes' => __DIR__ . '/../routes/lhs/notificacoes/list.php',
+
+    // LHS - Professores
+    'GET /api/lhs/professores' => __DIR__ . '/../routes/lhs/professores/list.php',
+
+    // LHS - Cursos (público)
+    'GET /api/lhs/cursos/ativos' => __DIR__ . '/../routes/lhs/cursos/list_ativos.php',
 ];
 
 $key = $method . ' ' . $uri;
@@ -385,9 +412,21 @@ if (preg_match('#^/api/lhs/turmas/(\d+)/detalhes$#', $uri, $m)) {
     }
 }
 
+if (preg_match('#^/api/lhs/turmas/(\d+)/alunos-risco$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'GET') {
+        require __DIR__ . '/../routes/lhs/turmas/alunos_risco.php';
+        exit;
+    }
+}
+
 // --- LHS Turmas - Matrículas ---
 if (preg_match('#^/api/lhs/turmas/(\d+)/alunos$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'GET') {
+        require __DIR__ . '/../routes/lhs/turmas/alunos/list.php';
+        exit;
+    }
     if ($method === 'POST') {
         require __DIR__ . '/../routes/lhs/turmas/alunos/matricular.php';
         exit;
@@ -398,6 +437,58 @@ if (preg_match('#^/api/lhs/turmas/(\d+)/alunos/(\d+)$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => (int) $m[1], 'aluno_id' => (int) $m[2]];
     if ($method === 'DELETE') {
         require __DIR__ . '/../routes/lhs/turmas/alunos/remover.php';
+        exit;
+    }
+}
+
+// --- LHS Inscrições ---
+if (preg_match('#^/api/lhs/inscricoes/(\d+)/aprovar$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'PUT' || $method === 'POST') {
+        require __DIR__ . '/../routes/lhs/inscricoes/aprovar.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/lhs/inscricoes/(\d+)/rejeitar$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'PUT' || $method === 'POST') {
+        require __DIR__ . '/../routes/lhs/inscricoes/rejeitar.php';
+        exit;
+    }
+}
+
+// --- LHS Aulas ---
+if (preg_match('#^/api/lhs/aulas/(\d+)$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'GET') {
+        require __DIR__ . '/../routes/lhs/aulas/details.php';
+        exit;
+    }
+    if ($method === 'PUT' || $method === 'PATCH') {
+        require __DIR__ . '/../routes/lhs/aulas/update.php';
+        exit;
+    }
+    if ($method === 'DELETE') {
+        require __DIR__ . '/../routes/lhs/aulas/delete.php';
+        exit;
+    }
+}
+
+// --- LHS Certificados ---
+if (preg_match('#^/api/lhs/certificados/turma/(\d+)/elegiveis$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'GET') {
+        require __DIR__ . '/../routes/lhs/certificados/elegiveis.php';
+        exit;
+    }
+}
+
+// --- LHS Notificações ---
+if (preg_match('#^/api/lhs/notificacoes/(\d+)/marcar-lida$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'POST') {
+        require __DIR__ . '/../routes/lhs/notificacoes/marcar_lida.php';
         exit;
     }
 }

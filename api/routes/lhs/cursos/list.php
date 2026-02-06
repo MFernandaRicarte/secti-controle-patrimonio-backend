@@ -1,6 +1,7 @@
 <?php
 require __DIR__ . '/../../../lib/db.php';
 require __DIR__ . '/../../../lib/http.php';
+require __DIR__ . '/../../../lib/auth.php';
 
 cors();
 
@@ -8,6 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     json(['error' => 'Método não permitido. Use GET.'], 405);
 }
 
+requireProfessorOrAdmin();
 $pdo = db();
 
 $sql = "
