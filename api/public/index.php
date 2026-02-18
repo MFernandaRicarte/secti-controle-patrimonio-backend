@@ -110,6 +110,10 @@ $routes = [
     'POST /api/lhs/inscricoes' => __DIR__ . '/../routes/lhs/inscricoes/create.php',
     'GET /api/lhs/inscricoes/consulta' => __DIR__ . '/../routes/lhs/inscricoes/consulta.php',
     'GET /api/lhs/inscricoes/cursos-disponiveis' => __DIR__ . '/../routes/lhs/inscricoes/cursos_disponiveis.php',
+    'GET /api/lhs/inscricoes/landing' => __DIR__ . '/../routes/lhs/inscricoes/landing.php',
+    'GET /api/lhs/inscricoes/stats' => __DIR__ . '/../routes/lhs/inscricoes/stats_publico.php',
+    'GET /api/lhs/inscricoes/faq' => __DIR__ . '/../routes/lhs/inscricoes/faq.php',
+    'GET /api/lhs/inscricoes/depoimentos' => __DIR__ . '/../routes/lhs/inscricoes/depoimentos.php',
 
     // LHS - Dashboard
     'GET /api/lhs/dashboard/stats' => __DIR__ . '/../routes/lhs/dashboard/stats.php',
@@ -342,6 +346,14 @@ if (preg_match('#^/api/contratos/(\d+)/fiscais/(\d+)$#', $uri, $m)) {
 }
 
 // --- LHS Cursos ---
+if (preg_match('#^/api/lhs/cursos/(\d+)/publico$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'GET') {
+        require __DIR__ . '/../routes/lhs/cursos/detail_publico.php';
+        exit;
+    }
+}
+
 if (preg_match('#^/api/lhs/cursos/(\d+)$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
     if ($method === 'PUT' || $method === 'PATCH') {
