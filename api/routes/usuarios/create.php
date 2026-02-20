@@ -4,7 +4,13 @@ require __DIR__ . '/../../config/config.php';
 require __DIR__ . '/../../lib/auth.php';
 
 cors();
-requireSuperAdmin();
+
+$user = requireAuth();
+$perfilUsuario = strtoupper($user['perfil_nome'] ?? '');
+
+if (!in_array($perfilUsuario, ['SUPERADMIN', 'ADMINISTRADOR', 'ADMIN_LANHOUSE'])) {
+    json(['error' => 'Acesso negado.'], 403);
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     json(['error' => 'Método não permitido'], 405);
@@ -45,10 +51,15 @@ try {
         json(['error' => 'Matrícula ou e-mail já cadastrado'], 409);
     }
 
-    $p = $pdo->prepare("SELECT id FROM perfis WHERE id = ?");
+    $p = $pdo->prepare("SELECT id, nome FROM perfis WHERE id = ?");
     $p->execute([$perfil_id]);
-    if (!$p->fetch()) {
+    $perfilAlvo = $p->fetch();
+    if (!$perfilAlvo) {
         json(['error' => 'Perfil inválido'], 422);
+    }
+
+    if ($perfilUsuario === 'ADMIN_LANHOUSE' && strtoupper($perfilAlvo['nome']) !== 'PROFESSOR') {
+        json(['error' => 'Admin Lan House só pode criar usuários com perfil Professor.'], 403);
     }
 
     $sql = "

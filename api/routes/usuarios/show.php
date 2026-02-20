@@ -4,7 +4,13 @@ require __DIR__.'/../../lib/auth.php';
 require __DIR__.'/../../lib/db.php';
 
 cors();
-requireSuperAdmin();
+
+$currentUser = requireAuth();
+$perfilAtual = strtoupper($currentUser['perfil_nome'] ?? '');
+
+if (!in_array($perfilAtual, ['SUPERADMIN', 'ADMINISTRADOR', 'ADMIN_LANHOUSE'])) {
+    json(['error' => 'Acesso negado.'], 403);
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
   json(['error' => 'Método não permitido'], 405);

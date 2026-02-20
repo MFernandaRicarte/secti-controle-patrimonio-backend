@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
-$user = requireAdminOrSuperAdmin();
+$user = requireLhsAdmin();
 $pdo = db();
 
 $status = isset($_GET['status']) ? trim($_GET['status']) : '';

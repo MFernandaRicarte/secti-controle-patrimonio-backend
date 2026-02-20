@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
     json(['error' => 'Método não permitido. Use DELETE.'], 405);
 }
 
-$user = requireAdminOrSuperAdmin();
+$user = requireLhsAdmin();
 $pdo = db();
 
 $turmaId = $GLOBALS['routeParams']['id'] ?? 0;

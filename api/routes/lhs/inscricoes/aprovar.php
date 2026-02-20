@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'PUT' && $_SERVER['REQUEST_METHOD'] !== 'POST
     exit;
 }
 
-$user = requireAdminOrSuperAdmin();
+$user = requireLhsAdmin();
 $pdo = db();
 
 $inscricaoId = $GLOBALS['routeParams']['id'] ?? 0;
