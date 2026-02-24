@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     json(['error' => 'Método não permitido. Use POST.'], 405);
 }
 
-requireAdminOrSuperAdmin();
+$user = requireLhsAdmin();
 $pdo = db();
 
 $input = json_decode(file_get_contents('php://input'), true) ?? [];
@@ -79,6 +79,14 @@ $stmt->execute([
 ]);
 
 $novoId = (int) $pdo->lastInsertId();
+
+if ($professorId) {
+    $stmtPt = $pdo->prepare("
+        INSERT IGNORE INTO lhs_professor_turmas (professor_id, turma_id, atribuido_por)
+        VALUES (?, ?, ?)
+    ");
+    $stmtPt->execute([$professorId, $novoId, $user['id']]);
+}
 
 $sql = "
     SELECT t.*, c.nome AS curso_nome, u.nome AS professor_nome

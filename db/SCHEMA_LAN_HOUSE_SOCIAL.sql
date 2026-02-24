@@ -139,9 +139,24 @@ CREATE TABLE IF NOT EXISTS lhs_presencas (
   INDEX idx_lhs_presencas_presente (presente)
 ) ENGINE=InnoDB;
 
+-- ===== PROFESSOR-TURMA (ATRIBUIÇÕES) =====
+CREATE TABLE IF NOT EXISTS lhs_professor_turmas (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  professor_id INT NOT NULL,
+  turma_id INT NOT NULL,
+  atribuido_por INT NULL,
+  atribuido_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_professor_turma (professor_id, turma_id),
+  CONSTRAINT fk_lhs_pt_professor FOREIGN KEY (professor_id) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_lhs_pt_turma FOREIGN KEY (turma_id) REFERENCES lhs_turmas(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_lhs_pt_atribuido FOREIGN KEY (atribuido_por) REFERENCES usuarios(id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
 -- ============================================================
 -- DADOS INICIAIS (SEEDS)
 -- ============================================================
+
+INSERT IGNORE INTO perfis (nome) VALUES ('ADMIN_LANHOUSE');
 
 -- Cursos de exemplo
 INSERT IGNORE INTO lhs_cursos (nome, carga_horaria, ementa, ativo) VALUES

@@ -20,18 +20,25 @@ $where = '';
 $params = [];
 
 if (isProfessor($user)) {
-    $where .= " AND t.professor_id = :professor_id";
-    $params[':professor_id'] = $user['id'];
+    $turmasProfessor = getTurmasProfessor($user['id']);
+    if (empty($turmasProfessor)) {
+        json([]);
+    }
+    $placeholders = implode(',', array_fill(0, count($turmasProfessor), '?'));
+    $where .= " AND t.id IN ($placeholders)";
+    foreach ($turmasProfessor as $tid) {
+        $params[] = $tid;
+    }
 }
 
 if ($cursoId > 0) {
-    $where .= " AND t.curso_id = :curso_id";
-    $params[':curso_id'] = $cursoId;
+    $where .= " AND t.curso_id = ?";
+    $params[] = $cursoId;
 }
 
 if ($status !== '') {
-    $where .= " AND t.status = :status";
-    $params[':status'] = $status;
+    $where .= " AND t.status = ?";
+    $params[] = $status;
 }
 
 $sql = "

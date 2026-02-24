@@ -60,6 +60,10 @@ function requireAdminOrSuperAdmin(): array {
     return $u;
 }
 
+function isAdminLanhouse(array $user): bool {
+    return strtoupper($user['perfil_nome'] ?? '') === 'ADMIN_LANHOUSE';
+}
+
 function isProfessor(array $user): bool {
     return strtoupper($user['perfil_nome'] ?? '') === 'PROFESSOR';
 }
@@ -69,35 +73,69 @@ function isAdmin(array $user): bool {
     return $perfil === 'SUPERADMIN' || $perfil === 'ADMINISTRADOR';
 }
 
+function isLhsAdmin(array $user): bool {
+    return isAdmin($user) || isAdminLanhouse($user);
+}
+
+function requireLhsAdmin(): array {
+    $u = authUser();
+    if (!isLhsAdmin($u)) {
+        json(['error' => 'Acesso negado. Requer Admin ou Admin Lan House'], 403);
+    }
+    return $u;
+}
+
+function requireLhsAccess(): array {
+    $u = authUser();
+    $perfil = strtoupper($u['perfil_nome'] ?? '');
+    if (!in_array($perfil, ['SUPERADMIN', 'ADMINISTRADOR', 'ADMIN_LANHOUSE', 'PROFESSOR'])) {
+        json(['error' => 'Acesso negado. Requer acesso à Lan House Social'], 403);
+    }
+    return $u;
+}
+
 function requireProfessorOrAdmin(): array {
     $u = authUser();
     $perfil = strtoupper($u['perfil_nome'] ?? '');
-    if (!in_array($perfil, ['SUPERADMIN', 'ADMINISTRADOR', 'PROFESSOR'])) {
+    if (!in_array($perfil, ['SUPERADMIN', 'ADMINISTRADOR', 'ADMIN_LANHOUSE', 'PROFESSOR'])) {
         json(['error' => 'Acesso negado. Requer Professor ou Administrador'], 403);
     }
     return $u;
 }
 
 function professorPodeTurma(array $user, int $turmaId): bool {
-    if (isAdmin($user)) {
+    if (isLhsAdmin($user)) {
         return true;
     }
-    
+
     $pdo = db();
-    $st = $pdo->prepare("SELECT professor_id FROM lhs_turmas WHERE id = ?");
-    $st->execute([$turmaId]);
-    $turma = $st->fetch();
-    
+    $st = $pdo->prepare("
+        SELECT 1 FROM lhs_professor_turmas 
+        WHERE professor_id = ? AND turma_id = ?
+    ");
+    $st->execute([$user['id'], $turmaId]);
+    if ($st->fetch()) {
+        return true;
+    }
+
+    $st2 = $pdo->prepare("SELECT professor_id FROM lhs_turmas WHERE id = ?");
+    $st2->execute([$turmaId]);
+    $turma = $st2->fetch();
+
     if (!$turma) {
         return false;
     }
-    
+
     return (int)$turma['professor_id'] === (int)$user['id'];
 }
 
 function getTurmasProfessor(int $professorId): array {
     $pdo = db();
-    $st = $pdo->prepare("SELECT id FROM lhs_turmas WHERE professor_id = ?");
-    $st->execute([$professorId]);
+    $st = $pdo->prepare("
+        SELECT DISTINCT turma_id AS id FROM lhs_professor_turmas WHERE professor_id = ?
+        UNION
+        SELECT id FROM lhs_turmas WHERE professor_id = ?
+    ");
+    $st->execute([$professorId, $professorId]);
     return array_column($st->fetchAll(), 'id');
 }

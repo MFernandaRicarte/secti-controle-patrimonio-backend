@@ -2,6 +2,7 @@
 
 require __DIR__ . '/../../../lib/http.php';
 require __DIR__ . '/../../../config/config.php';
+require __DIR__ . '/../../../lib/auth.php';
 
 cors();
 
@@ -14,6 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'PUT' && $_SERVER['REQUEST_METHOD'] !== 'PATC
     json(['error' => 'Método não permitido. Use PUT ou PATCH.'], 405);
     exit;
 }
+
+requireLhsAdmin();
 
 $id = $GLOBALS['routeParams']['id'] ?? 0;
 if (!$id) {

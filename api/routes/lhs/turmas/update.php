@@ -2,6 +2,7 @@
 
 require __DIR__ . '/../../../lib/http.php';
 require __DIR__ . '/../../../config/config.php';
+require __DIR__ . '/../../../lib/auth.php';
 
 cors();
 
@@ -15,11 +16,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'PUT' && $_SERVER['REQUEST_METHOD'] !== 'PATC
     exit;
 }
 
+requireLhsAdmin();
+
 $id = $GLOBALS['routeParams']['id'] ?? 0;
 if (!$id) {
     json(['error' => 'ID da turma não informado.'], 400);
     exit;
 }
+
+$user = authUser();
 
 try {
     $pdo = db();
@@ -110,7 +115,14 @@ try {
         ':id' => $id,
     ]);
 
-    // Buscar turma atualizada
+    if ($professorId && (int)($turma['professor_id'] ?? 0) !== $professorId) {
+        $stmtPt = $pdo->prepare("
+            INSERT IGNORE INTO lhs_professor_turmas (professor_id, turma_id, atribuido_por)
+            VALUES (?, ?, ?)
+        ");
+        $stmtPt->execute([$professorId, $id, $user['id']]);
+    }
+
     $sql = "
         SELECT t.*, c.nome AS curso_nome, u.nome AS professor_nome
         FROM lhs_turmas t

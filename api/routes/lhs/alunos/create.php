@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     json(['error' => 'Método não permitido. Use POST.'], 405);
 }
 
-requireAdminOrSuperAdmin();
+requireLhsAdmin();
 $pdo = db();
 
 $input = json_decode(file_get_contents('php://input'), true) ?? [];

@@ -48,6 +48,19 @@ try {
 
     unset($user['senha_hash']);
 
+    $perfilNome = strtoupper($user['perfil_nome'] ?? '');
+
+    $permissoes = [];
+    if ($perfilNome === 'SUPERADMIN') {
+        $permissoes = ['sistema_completo', 'admin_patrimonio', 'admin_lanhouse', 'lhs_gerenciar', 'lhs_professores', 'lhs_presenca'];
+    } elseif ($perfilNome === 'ADMINISTRADOR') {
+        $permissoes = ['admin_patrimonio', 'admin_lanhouse', 'lhs_gerenciar', 'lhs_professores', 'lhs_presenca'];
+    } elseif ($perfilNome === 'ADMIN_LANHOUSE') {
+        $permissoes = ['admin_lanhouse', 'lhs_gerenciar', 'lhs_professores', 'lhs_presenca'];
+    } elseif ($perfilNome === 'PROFESSOR') {
+        $permissoes = ['lhs_minhas_turmas', 'lhs_meus_alunos', 'lhs_presenca'];
+    }
+
     $token = jwt_generate([
         'uid' => $user['id'],
         'perfil_id' => $user['perfil_id'],
@@ -57,6 +70,7 @@ try {
         'message' => 'Login realizado com sucesso',
         'token'   => $token,
         'usuario' => $user,
+        'permissoes' => $permissoes,
     ]);
 
 } catch (Throwable $e) {

@@ -1,12 +1,15 @@
 <?php
 require __DIR__ . '/../../../../lib/db.php';
 require __DIR__ . '/../../../../lib/http.php';
+require __DIR__ . '/../../../../lib/auth.php';
 
 cors();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
     json(['error' => 'Método não permitido.'], 405);
 }
+
+requireLhsAdmin();
 
 $cursoId    = $GLOBALS['routeParams']['id'] ?? null;
 $materialId = $GLOBALS['routeParams']['material_id'] ?? null;
