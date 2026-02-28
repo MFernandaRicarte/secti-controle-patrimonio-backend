@@ -1,12 +1,15 @@
 <?php
 require __DIR__ . '/../../../../lib/db.php';
 require __DIR__ . '/../../../../lib/http.php';
+require __DIR__ . '/../../../../lib/auth.php';
 
 cors();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     json(['error' => 'Método não permitido. Use POST.'], 405);
 }
+
+requireLhsAdmin();
 
 $cursoId = $GLOBALS['routeParams']['id'] ?? null;
 $cursoId = (int)$cursoId;

@@ -4,7 +4,13 @@ require __DIR__.'/../../lib/auth.php';
 require __DIR__.'/../../lib/db.php';
 
 cors();
-requireSuperAdmin();
+
+$currentUser = requireAuth();
+$perfilAtual = strtoupper($currentUser['perfil_nome'] ?? '');
+
+if (!in_array($perfilAtual, ['SUPERADMIN', 'ADMINISTRADOR', 'ADMIN_LANHOUSE'])) {
+    json(['error' => 'Acesso negado.'], 403);
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'PUT' && $_SERVER['REQUEST_METHOD'] !== 'PATCH') {
   json(['error' => 'Método não permitido'], 405);
@@ -56,6 +62,19 @@ try {
   $st = $pdo->prepare('SELECT id FROM usuarios WHERE id = ?');
   $st->execute([$id]);
   if (!$st->fetch()) json(['error' => 'Usuário não encontrado'], 404);
+
+  if ($perfilAtual === 'ADMIN_LANHOUSE') {
+    $stCheck = $pdo->prepare("
+      SELECT p.nome AS perfil_nome FROM usuarios u
+      JOIN perfis p ON p.id = u.perfil_id
+      WHERE u.id = ?
+    ");
+    $stCheck->execute([$id]);
+    $alvo = $stCheck->fetch();
+    if (!$alvo || strtoupper($alvo['perfil_nome']) !== 'PROFESSOR') {
+      json(['error' => 'Admin Lan House só pode editar usuários Professor.'], 403);
+    }
+  }
 
   if ($email !== null) {
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) json(['error' => 'E-mail inválido'], 422);

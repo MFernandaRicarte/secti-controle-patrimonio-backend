@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     json(['error' => 'Método não permitido. Use GET.'], 405);
 }
 
-$user = requireAdminOrSuperAdmin();
+$user = requireLhsAdmin();
 $pdo = db();
 
 $apenasNaoLidas = isset($_GET['nao_lidas']) && $_GET['nao_lidas'] === '1';

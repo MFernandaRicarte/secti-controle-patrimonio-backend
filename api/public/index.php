@@ -128,6 +128,8 @@ $routes = [
 
     // LHS - Professores
     'GET /api/lhs/professores' => __DIR__ . '/../routes/lhs/professores/list.php',
+    'GET /api/lhs/professores/me' => __DIR__ . '/../routes/lhs/professores/me.php',
+    'GET /api/lhs/professores/turmas-disponiveis' => __DIR__ . '/../routes/lhs/professores/turmas_disponiveis.php',
 
     // LHS - Cursos (público)
     'GET /api/lhs/cursos/ativos' => __DIR__ . '/../routes/lhs/cursos/list_ativos.php',
@@ -501,6 +503,31 @@ if (preg_match('#^/api/lhs/notificacoes/(\d+)/marcar-lida$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
     if ($method === 'POST') {
         require __DIR__ . '/../routes/lhs/notificacoes/marcar_lida.php';
+        exit;
+    }
+}
+
+// --- LHS Professores ---
+if (preg_match('#^/api/lhs/professores/(\d+)/turmas$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'POST') {
+        require __DIR__ . '/../routes/lhs/professores/atribuir_turma.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/lhs/professores/(\d+)/turmas/(\d+)$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1], 'turma_id' => (int) $m[2]];
+    if ($method === 'DELETE') {
+        require __DIR__ . '/../routes/lhs/professores/remover_turma.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/lhs/professores/(\d+)$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'GET') {
+        require __DIR__ . '/../routes/lhs/professores/detail.php';
         exit;
     }
 }
