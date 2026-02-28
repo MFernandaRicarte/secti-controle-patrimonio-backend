@@ -536,6 +536,6 @@ if (preg_match('#^/api/lhs/professores/(\d+)$#', $uri, $m)) {
 // FALLBACK - 404
 // =============================================================================
 
-require __DIR__ . '/lib/http.php';
+require __DIR__ . '/../lib/http.php';
 cors();
 json(['error' => 'Not Found', 'path' => $uri], 404);
