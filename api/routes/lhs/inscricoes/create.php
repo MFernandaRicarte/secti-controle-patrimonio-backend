@@ -40,7 +40,7 @@ $erros = [];
 
 if ($nome === '') {
     $erros[] = 'Nome completo é obrigatório.';
-} elseif (mb_strlen($nome) < 5) {
+} elseif ((function_exists('mb_strlen') ? mb_strlen($nome) : strlen($nome)) < 5) {
     $erros[] = 'Nome deve ter pelo menos 5 caracteres.';
 }
 

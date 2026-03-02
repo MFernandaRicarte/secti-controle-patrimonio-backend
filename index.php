@@ -1,4 +1,38 @@
-﻿<?php
+<?php
+// =============================================================================
+// HANDLER GLOBAL DE ERROS — Garante que TODA resposta seja JSON, nunca HTML
+// =============================================================================
+ini_set('display_errors', '0');
+ini_set('html_errors', '0');
+error_reporting(E_ALL);
+
+set_error_handler(function (int $severity, string $message, string $file, int $line): bool {
+    // Converte warnings/notices em exceções para serem capturadas abaixo
+    throw new \ErrorException($message, 0, $severity, $file, $line);
+});
+
+set_exception_handler(function (\Throwable $e): void {
+    http_response_code(500);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'error' => 'Erro interno no servidor.',
+        'detalhe' => $e->getMessage(),
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+});
+
+register_shutdown_function(function (): void {
+    $error = error_get_last();
+    if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
+        http_response_code(500);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'error' => 'Erro fatal no servidor.',
+            'detalhe' => $error['message'],
+        ], JSON_UNESCAPED_UNICODE);
+    }
+});
+
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $method = $_SERVER['REQUEST_METHOD'];
 
