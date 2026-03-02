@@ -8,7 +8,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 $routes = [
     // Healthcheck
-    'GET /api/ping'    => __DIR__ . '/routes/ping.php',
+    'GET /api/ping'    => __DIR__ . '/api/routes/ping.php',
     'GET /api/ping_db' => __DIR__ . '/routes/ping_db.php',
 
     // Auth
