@@ -1,0 +1,7 @@
+.git
+.gitignore
+.editorconfig
+*.md
+LICENSE
+db/
+scripts/
