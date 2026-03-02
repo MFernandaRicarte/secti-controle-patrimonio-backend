@@ -10,8 +10,19 @@ RUN apt-get update && apt-get install -y \
 # Habilitar mod_rewrite do Apache
 RUN a2enmod rewrite
 
-# Copiar configuração do Apache (VirtualHost com rewrite)
-COPY apache.conf /etc/apache2/sites-available/000-default.conf
+# Configurar VirtualHost com DocumentRoot e Rewrite
+RUN printf '<VirtualHost *:80>\n\
+    ServerAdmin webmaster@localhost\n\
+    DocumentRoot /var/www/html/api/public\n\
+    <Directory /var/www/html/api/public>\n\
+        Options Indexes FollowSymLinks\n\
+        AllowOverride All\n\
+        Require all granted\n\
+        FallbackResource /index.php\n\
+    </Directory>\n\
+    ErrorLog ${APACHE_LOG_DIR}/error.log\n\
+    CustomLog ${APACHE_LOG_DIR}/access.log combined\n\
+</VirtualHost>\n' > /etc/apache2/sites-available/000-default.conf
 
 # Copiar código do projeto
 COPY . /var/www/html/
