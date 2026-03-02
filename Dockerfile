@@ -1,7 +1,11 @@
 FROM php:8.2-apache
 
-# Habilitar extensões PHP necessárias
-RUN docker-php-ext-install pdo pdo_mysql mbstring
+# Instalar dependências do sistema e extensões PHP
+RUN apt-get update && apt-get install -y \
+    libonig-dev \
+    libzip-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && docker-php-ext-install pdo pdo_mysql mbstring
 
 # Habilitar mod_rewrite do Apache
 RUN a2enmod rewrite
