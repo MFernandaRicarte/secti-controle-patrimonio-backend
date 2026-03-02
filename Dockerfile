@@ -10,23 +10,8 @@ RUN apt-get update && apt-get install -y \
 # Habilitar mod_rewrite do Apache
 RUN a2enmod rewrite
 
-# Configurar o DocumentRoot para api/public
-ENV APACHE_DOCUMENT_ROOT=/var/www/html/api/public
-
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-
-# Permitir .htaccess (AllowOverride All) e configurar rewrite no VirtualHost
-RUN sed -ri -e 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
-
-# Adicionar regras de rewrite diretamente na config do Apache
-RUN echo '<Directory /var/www/html/api/public>\n\
-    RewriteEngine On\n\
-    RewriteCond %{REQUEST_FILENAME} !-f\n\
-    RewriteCond %{REQUEST_FILENAME} !-d\n\
-    RewriteRule ^(.*)$ index.php [QSA,L]\n\
-</Directory>' >> /etc/apache2/conf-available/rewrite.conf \
-    && a2enconf rewrite
+# Copiar configuração do Apache (VirtualHost com rewrite)
+COPY apache.conf /etc/apache2/sites-available/000-default.conf
 
 # Copiar código do projeto
 COPY . /var/www/html/
