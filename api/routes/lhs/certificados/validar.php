@@ -46,6 +46,7 @@ if (!$certificado) {
 json([
     'valido' => true,
     'certificado' => [
+        'id' => (int) $certificado['id'],
         'codigo_validacao' => $certificado['codigo_validacao'],
         'aluno_nome' => $certificado['aluno_nome'],
         'aluno_cpf_parcial' => substr($certificado['aluno_cpf'], 0, 3) . '.***.***-' . substr($certificado['aluno_cpf'], -2),

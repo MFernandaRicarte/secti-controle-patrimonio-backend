@@ -121,7 +121,9 @@ $routes = [
     // LHS - Certificados
     'GET /api/lhs/certificados' => __DIR__ . '/../routes/lhs/certificados/list.php',
     'POST /api/lhs/certificados/emitir' => __DIR__ . '/../routes/lhs/certificados/emitir.php',
+    'POST /api/lhs/certificados/emitir-lote' => __DIR__ . '/../routes/lhs/certificados/emitir-lote.php',
     'GET /api/lhs/certificados/validar' => __DIR__ . '/../routes/lhs/certificados/validar.php',
+    'GET /api/lhs/certificados/documento' => __DIR__ . '/../routes/lhs/certificados/documento.php',
 
     // LHS - Notificações
     'GET /api/lhs/notificacoes' => __DIR__ . '/../routes/lhs/notificacoes/list.php',

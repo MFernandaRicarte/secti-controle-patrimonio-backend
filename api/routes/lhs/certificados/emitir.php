@@ -102,8 +102,8 @@ while ($stmtCodigo->fetch()) {
 }
 
 $stmtInsert = $pdo->prepare("
-    INSERT INTO lhs_certificados (aluno_id, turma_id, codigo_validacao, frequencia_final, emitido_por)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO lhs_certificados (aluno_id, turma_id, codigo_validacao, frequencia_final, emitido_por, status)
+    VALUES (?, ?, ?, ?, ?, 'ativo')
 ");
 $stmtInsert->execute([$alunoId, $turmaId, $codigoValidacao, $frequenciaFinal, $user['id']]);
 

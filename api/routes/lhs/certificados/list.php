@@ -63,6 +63,10 @@ $certificados = array_map(function ($row) {
         'curso_nome' => $row['curso_nome'],
         'carga_horaria' => (int) $row['carga_horaria'],
         'frequencia_final' => (float) $row['frequencia_final'],
+
+        'status' => $row['status'] ?? 'ativo',
+        'data_emissao' => $row['emitido_em'],
+
         'emitido_em' => $row['emitido_em'],
         'emitido_por' => $row['emitido_por'] ? (int) $row['emitido_por'] : null,
         'emitido_por_nome' => $row['emitido_por_nome'],
