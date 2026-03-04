@@ -20,6 +20,7 @@ $sql = "
         s.endereco,
         s.status,
         s.criado_em,
+        s.atualizado_em,
         (
             SELECT GROUP_CONCAT(CONCAT(i.quantidade, ' ', i.tipo) SEPARATOR ', ')
             FROM reciclatech_solicitacao_itens i
@@ -41,6 +42,7 @@ $resp = array_map(function($r) {
         'status' => $r['status'],
         'criado_em' => $r['criado_em'],
         'itens_resumo' => $r['itens_resumo'] ?: '',
+        'atualizado_em' => $r['atualizado_em'],
     ];
 }, $rows);
 

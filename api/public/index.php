@@ -538,6 +538,15 @@ if (preg_match('#^/api/lhs/professores/(\d+)$#', $uri, $m)) {
     }
 }
 
+// --- ReciclaTech - Solicitações  ---
+if (preg_match('#^/api/reciclatech/solicitacoes/(\d+)/status$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'PUT' || $method === 'PATCH') {
+        require __DIR__ . '/../routes/reciclatech/solicitacoes/update_status.php';
+        exit;
+    }
+}
+
 // =============================================================================
 // FALLBACK - 404
 // =============================================================================
