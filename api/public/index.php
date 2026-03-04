@@ -135,6 +135,10 @@ $routes = [
 
     // LHS - Cursos (público)
     'GET /api/lhs/cursos/ativos' => __DIR__ . '/../routes/lhs/cursos/list_ativos.php',
+
+    // ReciclaTech - Solicitações
+    'GET /api/reciclatech/solicitacoes'  => __DIR__ . '/../routes/reciclatech/solicitacoes/list.php',
+    'POST /api/reciclatech/solicitacoes' => __DIR__ . '/../routes/reciclatech/solicitacoes/create.php',
 ];
 
 $key = $method . ' ' . $uri;
