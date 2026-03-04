@@ -1,5 +1,5 @@
 <?php
-const DB_HOST = '186.227.194.2';
+const DB_HOST = 'localhost';
 const DB_PORT = 3306;
 const DB_NAME = 'secticampinagran_administrativo';
 const DB_USER = 'secticampinagran_fernanda';
