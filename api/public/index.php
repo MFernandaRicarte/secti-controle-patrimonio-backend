@@ -139,6 +139,10 @@ $routes = [
     // ReciclaTech - Solicitações
     'GET /api/reciclatech/solicitacoes'  => __DIR__ . '/../routes/reciclatech/solicitacoes/list.php',
     'POST /api/reciclatech/solicitacoes' => __DIR__ . '/../routes/reciclatech/solicitacoes/create.php',
+    'GET /api/reciclatech/solicitacoes/detalhe' => __DIR__ . '/../routes/reciclatech/solicitacoes/detail.php',
+    'POST /api/reciclatech/solicitacoes/gerar-os' => __DIR__ . '/../routes/reciclatech/solicitacoes/gerar_os.php',
+    'GET /api/reciclatech/os' => __DIR__ . '/../routes/reciclatech/os/list.php',  
+    
 ];
 
 $key = $method . ' ' . $uri;
@@ -538,11 +542,43 @@ if (preg_match('#^/api/lhs/professores/(\d+)$#', $uri, $m)) {
     }
 }
 
-// --- ReciclaTech - Solicitações  ---
+// --- ReciclaTech - Solicitações (detalhe / status / gerar OS) ---
+if (preg_match('#^/api/reciclatech/solicitacoes/(\d+)$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int)$m[1]];
+    if ($method === 'GET') {
+        require __DIR__ . '/../routes/reciclatech/solicitacoes/detail.php';
+        exit;
+    }
+}
+
 if (preg_match('#^/api/reciclatech/solicitacoes/(\d+)/status$#', $uri, $m)) {
-    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    $GLOBALS['routeParams'] = ['id' => (int)$m[1]];
     if ($method === 'PUT' || $method === 'PATCH') {
         require __DIR__ . '/../routes/reciclatech/solicitacoes/update_status.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/reciclatech/solicitacoes/(\d+)/gerar-os$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int)$m[1]];
+    if ($method === 'POST') {
+        require __DIR__ . '/../routes/reciclatech/solicitacoes/gerar_os.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/reciclatech/os/(\d+)$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'GET') {
+        require __DIR__ . '/../routes/reciclatech/os/detail.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/reciclatech/os/(\d+)/status$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'PUT' || $method === 'PATCH') {
+        require __DIR__ . '/../routes/reciclatech/os/update_status.php';
         exit;
     }
 }
