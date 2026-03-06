@@ -23,10 +23,22 @@ $sql = "
         s.atualizado_em,
         (
             SELECT GROUP_CONCAT(CONCAT(i.quantidade, ' ', i.tipo) SEPARATOR ', ')
-            FROM reciclatech_solicitacao_itens i
+            FROM rct_solicitacao_itens i
             WHERE i.solicitacao_id = s.id
-        ) AS itens_resumo
-    FROM reciclatech_solicitacoes s
+        ) AS itens_resumo,
+        (
+            SELECT COUNT(*)
+            FROM rct_os o
+            WHERE o.solicitacao_id = s.id
+        ) AS tem_os,
+        (
+            SELECT o.id
+            FROM rct_os o
+            WHERE o.solicitacao_id = s.id
+            ORDER BY o.id DESC
+            LIMIT 1
+        ) AS os_id
+    FROM rct_solicitacoes s
     ORDER BY s.id DESC
     LIMIT 500
 ";
@@ -41,8 +53,10 @@ $resp = array_map(function($r) {
         'endereco' => $r['endereco'],
         'status' => $r['status'],
         'criado_em' => $r['criado_em'],
-        'itens_resumo' => $r['itens_resumo'] ?: '',
         'atualizado_em' => $r['atualizado_em'],
+        'itens_resumo' => $r['itens_resumo'] ?: '',
+        'tem_os' => ((int)$r['tem_os']) > 0,
+        'os_id' => $r['os_id'] ? (int)$r['os_id'] : null,
     ];
 }, $rows);
 

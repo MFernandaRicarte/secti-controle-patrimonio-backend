@@ -43,15 +43,14 @@ if ($erros) {
 $pdo->beginTransaction();
 
 try {
-    // protocolo robusto: RCT-YYYYMMDD-<id>
+    $tmpProto = 'RCT-TMP';
+
     $stmt = $pdo->prepare("
-        INSERT INTO reciclatech_solicitacoes
+        INSERT INTO rct_solicitacoes
         (protocolo, nome, telefone, email, endereco, referencia, observacoes, status, criado_por)
         VALUES (?, ?, ?, ?, ?, ?, ?, 'ABERTA', ?)
     ");
 
-    // insere com protocolo temporário; depois atualiza com ID
-    $tmpProto = 'RCT-TMP';
     $stmt->execute([
         $tmpProto,
         $nome,
@@ -66,11 +65,11 @@ try {
     $id = (int)$pdo->lastInsertId();
     $protocolo = 'RCT-' . date('Ymd') . '-' . str_pad((string)$id, 6, '0', STR_PAD_LEFT);
 
-    $upd = $pdo->prepare("UPDATE reciclatech_solicitacoes SET protocolo = ? WHERE id = ?");
+    $upd = $pdo->prepare("UPDATE rct_solicitacoes SET protocolo = ? WHERE id = ?");
     $upd->execute([$protocolo, $id]);
 
     $stmtItem = $pdo->prepare("
-        INSERT INTO reciclatech_solicitacao_itens
+        INSERT INTO rct_solicitacao_itens
         (solicitacao_id, tipo, quantidade, descricao)
         VALUES (?, ?, ?, ?)
     ");
@@ -97,5 +96,5 @@ try {
 
 } catch (PDOException $e) {
     $pdo->rollBack();
-    json(['error' => 'Erro ao criar solicitação.'], 500);
+    json(['error' => 'Erro ao criar solicitação.', 'debug' => $e->getMessage()], 500);
 }
