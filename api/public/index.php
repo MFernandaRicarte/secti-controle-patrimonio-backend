@@ -143,6 +143,7 @@ $routes = [
     'POST /api/reciclatech/solicitacoes/gerar-os' => __DIR__ . '/../routes/reciclatech/solicitacoes/gerar_os.php',
     'GET /api/reciclatech/os' => __DIR__ . '/../routes/reciclatech/os/list.php',
     'GET /api/reciclatech/relatorios' => __DIR__ . '/../routes/reciclatech/relatorios/list.php',
+    'GET /api/reciclatech/equipamentos' => __DIR__ . '/../routes/reciclatech/equipamentos/list.php',
     
 ];
 
@@ -580,6 +581,18 @@ if (preg_match('#^/api/reciclatech/os/(\d+)/status$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
     if ($method === 'PUT' || $method === 'PATCH') {
         require __DIR__ . '/../routes/reciclatech/os/update_status.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/reciclatech/os/(\d+)/equipamentos$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int)$m[1]];
+    if ($method === 'GET') {
+        require __DIR__ . '/../routes/reciclatech/os/equipamentos_list.php';
+        exit;
+    }
+    if ($method === 'POST' || $method === 'PUT') {
+        require __DIR__ . '/../routes/reciclatech/os/equipamentos_save.php';
         exit;
     }
 }

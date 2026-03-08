@@ -57,7 +57,7 @@ try {
     }
 
     $stmtItens = $pdo->prepare("
-        SELECT tipo, quantidade, descricao
+        SELECT id, tipo, quantidade, descricao
         FROM rct_solicitacao_itens
         WHERE solicitacao_id = ?
         ORDER BY id ASC
@@ -94,6 +94,11 @@ try {
         VALUES (?, ?, ?, ?)
     ");
 
+    $stEquip = $pdo->prepare("
+        INSERT INTO rct_os_equipamentos (os_id, tipo, descricao, numero_item)
+        VALUES (?, ?, ?, ?)
+    ");
+
     foreach ($itens as $i) {
         $stItem->execute([
             $osId,
@@ -101,6 +106,15 @@ try {
             (int)$i['quantidade'],
             ($i['descricao'] ?? '') !== '' ? $i['descricao'] : null
         ]);
+
+        for ($n = 1; $n <= (int)$i['quantidade']; $n++) {
+            $stEquip->execute([
+                $osId,
+                $i['tipo'],
+                ($i['descricao'] ?? '') !== '' ? $i['descricao'] : null,
+                $n
+            ]);
+        }
     }
 
     $stUpd = $pdo->prepare("
