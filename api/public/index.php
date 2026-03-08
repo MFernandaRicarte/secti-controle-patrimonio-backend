@@ -141,7 +141,8 @@ $routes = [
     'POST /api/reciclatech/solicitacoes' => __DIR__ . '/../routes/reciclatech/solicitacoes/create.php',
     'GET /api/reciclatech/solicitacoes/detalhe' => __DIR__ . '/../routes/reciclatech/solicitacoes/detail.php',
     'POST /api/reciclatech/solicitacoes/gerar-os' => __DIR__ . '/../routes/reciclatech/solicitacoes/gerar_os.php',
-    'GET /api/reciclatech/os' => __DIR__ . '/../routes/reciclatech/os/list.php',  
+    'GET /api/reciclatech/os' => __DIR__ . '/../routes/reciclatech/os/list.php',
+    'GET /api/reciclatech/relatorios' => __DIR__ . '/../routes/reciclatech/relatorios/list.php',
     
 ];
 
