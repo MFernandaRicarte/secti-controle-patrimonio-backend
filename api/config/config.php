@@ -1,9 +1,9 @@
 <?php
-const DB_HOST = 'localhost';
+const DB_HOST = '127.0.0.1';
 const DB_PORT = 3306;
-const DB_NAME = 'secticampinagran_administrativo';
-const DB_USER = 'secticampinagran_fernanda';
-const DB_PASS = 'sectiadmin2025';
+const DB_NAME = 'secti';
+const DB_USER = 'secti';
+const DB_PASS = 'secti';
 
 function db(): PDO
 {
