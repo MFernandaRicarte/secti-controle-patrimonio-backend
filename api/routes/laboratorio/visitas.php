@@ -29,17 +29,23 @@ try {
     // =====================================================
     if ($method === 'GET') {
 
-        $sql = "
+       $sql = "
             SELECT
                 id,
                 instituicao,
                 responsavel,
+                telefone,
+                email,
                 numero_participantes AS participantes,
-                DATE_FORMAT(data_visita, '%d/%m/%Y') AS data,
-                TIME_FORMAT(horario_visita, '%H:%i') AS horario,
+                ano_escolar,
+                objetivo_visita,
+                acessibilidade,
+                descricao_acessibilidade,
+                data_visita AS data,
+                horario_visita AS horario,
                 status
             FROM laboratorio_visitas
-            ORDER BY data_visita DESC, horario_visita DESC
+            ORDER BY data_visita DESC
         ";
 
         $stmt = $pdo->query($sql);
