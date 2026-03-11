@@ -5,7 +5,7 @@
 // =============================
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type");
-header("Access-Control-Allow-Methods: GET, POST, PATCH, OPTIONS");
+header("Access-Control-Allow-Methods: GET, POST, PATCH, DELETE, OPTIONS");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -226,6 +226,34 @@ try {
 
         exit;
     }
+
+    // =====================================================
+// EXCLUIR VISITA
+// =====================================================
+if ($method === 'DELETE') {
+
+    $data = json_decode(file_get_contents("php://input"), true);
+
+    if (!isset($data['id'])) {
+        throw new Exception("ID não informado.");
+    }
+
+    $stmt = $pdo->prepare("
+        DELETE FROM laboratorio_visitas
+        WHERE id = :id
+    ");
+
+    $stmt->execute([
+        ':id' => $data['id']
+    ]);
+
+    echo json_encode([
+        "success" => true,
+        "message" => "Visita excluída com sucesso."
+    ]);
+
+    exit;
+}
 
 } catch (Exception $e) {
 
