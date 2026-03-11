@@ -29,31 +29,49 @@ try {
     // =====================================================
     if ($method === 'GET') {
 
-       $sql = "
-            SELECT
-                id,
-                instituicao,
-                responsavel,
-                telefone,
-                email,
-                numero_participantes AS participantes,
-                ano_escolar,
-                objetivo_visita,
-                acessibilidade,
-                descricao_acessibilidade,
-                data_visita AS data,
-                horario_visita AS horario,
-                status
+    // CONSULTA HORÁRIOS OCUPADOS POR DATA
+    if (isset($_GET['data'])) {
+
+        $stmt = $pdo->prepare("
+            SELECT horario_visita
             FROM laboratorio_visitas
-            ORDER BY data_visita DESC
-        ";
+            WHERE data_visita = :data
+            AND status = 'confirmado'
+        ");
 
-        $stmt = $pdo->query($sql);
+        $stmt->execute([
+            ':data' => $_GET['data']
+        ]);
 
-        echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+        echo json_encode($stmt->fetchAll(PDO::FETCH_COLUMN));
         exit;
     }
 
+    // LISTAR TODAS AS VISITAS
+    $sql = "
+        SELECT
+            id,
+            instituicao,
+            responsavel,
+            telefone,
+            email,
+            numero_participantes AS participantes,
+            ano_escolar,
+            objetivo_visita,
+            acessibilidade,
+            descricao_acessibilidade,
+            data_visita AS data,
+            horario_visita AS horario,
+            status
+        FROM laboratorio_visitas
+        ORDER BY data_visita DESC
+    ";
+
+    $stmt = $pdo->query($sql);
+
+    echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+    exit;
+}
     // =====================================================
     // CRIAR NOVA VISITA
     // =====================================================
@@ -91,6 +109,30 @@ try {
 
             exit;
         }
+        // verificar se já existe visita confirmada no mesmo horário
+        $check = $pdo->prepare("
+            SELECT COUNT(*) 
+            FROM laboratorio_visitas
+            WHERE data_visita = :data
+            AND horario_visita = :horario
+            AND status = 'confirmado'
+        ");
+
+        $check->execute([
+            ':data' => $data['data_visita'],
+            ':horario' => $data['horario']
+        ]);
+
+        if ($check->fetchColumn() > 0) {
+
+            http_response_code(400);
+
+            echo json_encode([
+                "error" => "Já existe uma visita confirmada para este horário."
+        ]);
+
+        exit;
+    }
 
         // =============================
         // INSERT
