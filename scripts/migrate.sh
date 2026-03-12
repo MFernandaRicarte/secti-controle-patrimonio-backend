@@ -1,9 +1,9 @@
 set -euo pipefail
 
 DB_HOST="${DB_HOST:-127.0.0.1}"
-DB_PORT="${DB_PORT:-3307}"
-DB_USER="${DB_USER:-secti_user}"
-DB_PASS="${DB_PASS:-secti123}"
+DB_PORT="${DB_PORT:-3306}"
+DB_USER="${DB_USER:-secti}"
+DB_PASS="${DB_PASS:-secti}"
 DB_NAME="${DB_NAME:-secti}"
 
 MYSQL=(mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASS" "$DB_NAME")
