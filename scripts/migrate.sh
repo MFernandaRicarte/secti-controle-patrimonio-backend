@@ -27,7 +27,7 @@ run_sql_file() {
 
   local out
   if ! out=$("${MYSQL[@]}" < "$f" 2>&1); then
-    if echo "$out" | grep -Eq "Duplicate column name|Duplicate key name|already exists|Can't create table|Failed to open the referenced table"; then
+    if echo "$out" | grep -Eq "Duplicate column name|Duplicate key name|already exists|Can't create table"; then
       echo "==> Aviso (ignorando): $(basename "$f")"
       echo "$out" | tail -n 3
       return 0

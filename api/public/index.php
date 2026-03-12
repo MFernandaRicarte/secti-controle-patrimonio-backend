@@ -141,6 +141,20 @@ $routes = [
 
     // LHS - Cursos (público)
     'GET /api/lhs/cursos/ativos' => __DIR__ . '/../routes/lhs/cursos/list_ativos.php',
+
+    // ReciclaTech - Solicitações (admin)
+    'GET /api/reciclatech/solicitacoes'  => __DIR__ . '/../routes/reciclatech/solicitacoes/list.php',
+    'POST /api/reciclatech/solicitacoes' => __DIR__ . '/../routes/reciclatech/solicitacoes/create.php',
+    'GET /api/reciclatech/solicitacoes/detalhe' => __DIR__ . '/../routes/reciclatech/solicitacoes/detail.php',
+    'POST /api/reciclatech/solicitacoes/gerar-os' => __DIR__ . '/../routes/reciclatech/solicitacoes/gerar_os.php',
+    'GET /api/reciclatech/os' => __DIR__ . '/../routes/reciclatech/os/list.php',  
+
+    // ReciclaTech - Landing Page (público, sem autenticação)
+    'GET /api/reciclatech/public/categorias'    => __DIR__ . '/../routes/reciclatech/public/categorias.php',
+    'POST /api/reciclatech/public/solicitacoes' => __DIR__ . '/../routes/reciclatech/public/criar_solicitacao.php',
+    'GET /api/reciclatech/public/status'        => __DIR__ . '/../routes/reciclatech/public/consultar_status.php',
+    'GET /api/reciclatech/public/estatisticas'  => __DIR__ . '/../routes/reciclatech/public/estatisticas.php',
+    
 ];
 
 $key = $method . ' ' . $uri;
@@ -536,6 +550,47 @@ if (preg_match('#^/api/lhs/professores/(\d+)$#', $uri, $m)) {
     $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
     if ($method === 'GET') {
         require __DIR__ . '/../routes/lhs/professores/detail.php';
+        exit;
+    }
+}
+
+// --- ReciclaTech - Solicitações (detalhe / status / gerar OS) ---
+if (preg_match('#^/api/reciclatech/solicitacoes/(\d+)$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int)$m[1]];
+    if ($method === 'GET') {
+        require __DIR__ . '/../routes/reciclatech/solicitacoes/detail.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/reciclatech/solicitacoes/(\d+)/status$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int)$m[1]];
+    if ($method === 'PUT' || $method === 'PATCH') {
+        require __DIR__ . '/../routes/reciclatech/solicitacoes/update_status.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/reciclatech/solicitacoes/(\d+)/gerar-os$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int)$m[1]];
+    if ($method === 'POST') {
+        require __DIR__ . '/../routes/reciclatech/solicitacoes/gerar_os.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/reciclatech/os/(\d+)$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'GET') {
+        require __DIR__ . '/../routes/reciclatech/os/detail.php';
+        exit;
+    }
+}
+
+if (preg_match('#^/api/reciclatech/os/(\d+)/status$#', $uri, $m)) {
+    $GLOBALS['routeParams'] = ['id' => (int) $m[1]];
+    if ($method === 'PUT' || $method === 'PATCH') {
+        require __DIR__ . '/../routes/reciclatech/os/update_status.php';
         exit;
     }
 }
