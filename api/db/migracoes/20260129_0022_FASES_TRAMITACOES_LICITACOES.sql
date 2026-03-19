@@ -1,6 +1,20 @@
--- Migração: adiciona current_fase_id em licitacoes e cria tramitacoes_licitacoes
-ALTER TABLE licitacoes
-  ADD COLUMN IF NOT EXISTS current_fase_id INT NULL;
+-- MariaDB compatível: adiciona coluna current_fase_id somente se não existir
+SET @col_exists := (
+  SELECT COUNT(*)
+  FROM INFORMATION_SCHEMA.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'licitacoes'
+    AND COLUMN_NAME = 'current_fase_id'
+);
+
+SET @sql := IF(@col_exists = 0,
+  'ALTER TABLE licitacoes ADD COLUMN current_fase_id INT NULL',
+  'SELECT \"current_fase_id já existe\"'
+);
+
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 CREATE TABLE IF NOT EXISTS tramitacoes_licitacoes (
   id INT PRIMARY KEY AUTO_INCREMENT,

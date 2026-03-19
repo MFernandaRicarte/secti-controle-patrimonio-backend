@@ -1,9 +1,10 @@
 <?php
-const DB_HOST = '127.0.0.1';
-const DB_PORT = 3307;
-const DB_NAME = 'secti';
-const DB_USER = 'secti_user';
-const DB_PASS = 'secti123';
+const DB_HOST = '186.227.194.2';
+const DB_PORT = 3306;
+const DB_NAME = 'secticampinagran_administrativo';
+
+const DB_USER = 'secticampinagran_miguel';
+const DB_PASS = 'secti@2026#DB';
 
 function db(): PDO
 {

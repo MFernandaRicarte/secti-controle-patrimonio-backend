@@ -9,6 +9,7 @@ $allowed = [
 
 if ($origin && in_array($origin, $allowed, true)) {
   header("Access-Control-Allow-Origin: $origin");
+  header('Access-Control-Allow-Credentials: true');
 } else {
   header('Access-Control-Allow-Origin: *');
 }

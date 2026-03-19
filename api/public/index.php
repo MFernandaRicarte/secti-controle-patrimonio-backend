@@ -89,6 +89,12 @@ $routes = [
     'POST /api/notificacoes/marcar-lida'         => __DIR__ . '/../routes/notificacoes/marcar_lida.php',
     'POST /api/notificacoes/solicitacao-material'=> __DIR__ . '/../routes/notificacoes/solicitacao_material.php',
 
+    // Contratos colaboradores
+    'GET /api/contratos-colaboradores/modelo'  => __DIR__ . '/../routes/contratos-colaboradores/modelo.php',
+    'POST /api/contratos-colaboradores/modelo' => __DIR__ . '/../routes/contratos-colaboradores/modelo.php',
+    'PUT /api/contratos-colaboradores/modelo'  => __DIR__ . '/../routes/contratos-colaboradores/modelo.php',
+    'GET /api/contratos-colaboradores/gerar'   => __DIR__ . '/../routes/contratos-colaboradores/contrato-pdf.php',
+
     // LHS - Cursos
     'GET /api/lhs/cursos'  => __DIR__ . '/../routes/lhs/cursos/list.php',
     'POST /api/lhs/cursos' => __DIR__ . '/../routes/lhs/cursos/create.php',
