@@ -1,20 +1,28 @@
 <?php
-const DB_HOST = '186.227.194.2';
-const DB_PORT = 3306;
-const DB_NAME = 'secticampinagran_administrativo';
 
-const DB_USER = 'secticampinagran_miguel';
-const DB_PASS = 'secti@2026#DB';
+function env_value(string $key, $default = null)
+{
+    $value = $_ENV[$key] ?? getenv($key);
+    return ($value !== false && $value !== null && $value !== '') ? $value : $default;
+}
 
 function db(): PDO
 {
     static $pdo;
     if ($pdo) return $pdo;
 
-    $dsn = 'mysql:host=' . DB_HOST . ';port=' . DB_PORT . ';dbname=' . DB_NAME . ';charset=utf8mb4';
-    $pdo = new PDO($dsn, DB_USER, DB_PASS, [
+    $host = env_value('DB_HOST', '127.0.0.1');
+    $port = (int) env_value('DB_PORT', 3306);
+    $name = env_value('DB_NAME', '');
+    $user = env_value('DB_USER', '');
+    $pass = env_value('DB_PASS', '');
+
+    $dsn = 'mysql:host=' . $host . ';port=' . $port . ';dbname=' . $name . ';charset=utf8mb4';
+
+    $pdo = new PDO($dsn, $user, $pass, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     ]);
+
     return $pdo;
 }
