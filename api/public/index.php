@@ -142,7 +142,7 @@ $routes = [
     // LHS - Cursos (público)
     'GET /api/lhs/cursos/ativos' => __DIR__ . '/../routes/lhs/cursos/list_ativos.php',
 
-    // ReciclaTech - Solicitações
+    // ReciclaTech - Solicitações (admin)
     'GET /api/reciclatech/solicitacoes'  => __DIR__ . '/../routes/reciclatech/solicitacoes/list.php',
     'POST /api/reciclatech/solicitacoes' => __DIR__ . '/../routes/reciclatech/solicitacoes/create.php',
     'GET /api/reciclatech/solicitacoes/detalhe' => __DIR__ . '/../routes/reciclatech/solicitacoes/detail.php',
@@ -150,6 +150,13 @@ $routes = [
     'GET /api/reciclatech/os' => __DIR__ . '/../routes/reciclatech/os/list.php',
     'GET /api/reciclatech/relatorios' => __DIR__ . '/../routes/reciclatech/relatorios/list.php',
     'GET /api/reciclatech/equipamentos' => __DIR__ . '/../routes/reciclatech/equipamentos/list.php',
+    'GET /api/reciclatech/os' => __DIR__ . '/../routes/reciclatech/os/list.php',  
+
+    // ReciclaTech - Landing Page (público, sem autenticação)
+    'GET /api/reciclatech/public/categorias'    => __DIR__ . '/../routes/reciclatech/public/categorias.php',
+    'POST /api/reciclatech/public/solicitacoes' => __DIR__ . '/../routes/reciclatech/public/criar_solicitacao.php',
+    'GET /api/reciclatech/public/status'        => __DIR__ . '/../routes/reciclatech/public/consultar_status.php',
+    'GET /api/reciclatech/public/estatisticas'  => __DIR__ . '/../routes/reciclatech/public/estatisticas.php',
     
 ];
 
