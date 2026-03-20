@@ -9,7 +9,7 @@ DB_NAME="${DB_NAME:-secti}"
 MYSQL=(mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASS" "$DB_NAME")
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-MIG_DIR="$ROOT_DIR/db/migracoes"
+MIG_DIR="$ROOT_DIR/api/db/migracoes"
 
 RESET_DB="false"
 if [[ "${1:-}" == "--reset" ]]; then
@@ -41,6 +41,11 @@ run_sql_file() {
 
 echo "==> Usando DB: $DB_USER@$DB_HOST:$DB_PORT/$DB_NAME"
 echo "==> Pasta migracoes: $MIG_DIR"
+
+if [[ ! -d "$MIG_DIR" ]]; then
+  echo "!! Pasta de migrações não encontrada: $MIG_DIR"
+  exit 1
+fi
 
 if [[ "$RESET_DB" == "true" ]]; then
   echo "==> RESET: dropando e recriando banco $DB_NAME"
